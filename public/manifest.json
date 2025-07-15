@@ -1,0 +1,26 @@
+{
+  "name": "Lokaz",
+  "short_name": "Lokaz",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff9900",
+  "description": "Location de chambres et maisons",
+  "icons": [
+    {
+      "src": "/AppImages/android/android-launchericon-144-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/AppImages/android/android-launchericon-192-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/AppImages/android/android-launchericon-512-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+} 
