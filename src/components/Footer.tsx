@@ -15,11 +15,11 @@ const Footer = () => {
           {/* Logo et description */}
           <div className="md:col-span-1">
             <div className="mb-6">
-              <Logo className="h-12 w-auto invert" />
+            <Logo className="h-12 w-auto invert" />
             </div>
             <p className="text-gray-300 mb-6 leading-relaxed">
-              La première plateforme de gestion locative connectée du Togo. 
-              Trouvez, réservez et gérez vos locations en toute simplicité.
+              La première plateforme de gestion immobilière connectée du Togo. 
+              Trouvez, réservez et gérez vos biens avec NBBC Immo en toute simplicité.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="bg-white/10 hover:bg-lokaz-orange p-2 rounded-full transition-colors duration-200">
@@ -60,10 +60,19 @@ const Footer = () => {
                   <DialogTrigger asChild>
                     <button className="text-gray-300 hover:text-white transition-colors w-full text-left">FAQ</button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent 
+                    className="max-w-2xl"
+                    aria-describedby="faq-description"
+                  >
                     <DialogHeader>
                       <DialogTitle>Foire Aux Questions (FAQ)</DialogTitle>
                     </DialogHeader>
+                    
+                    {/* Description pour l'accessibilité */}
+                    <div id="faq-description" className="sr-only">
+                      Foire aux questions fréquemment posées
+                    </div>
+                    
                     <FAQ />
                   </DialogContent>
                 </Dialog>
@@ -73,10 +82,19 @@ const Footer = () => {
                   <DialogTrigger asChild>
                     <button className="text-gray-300 hover:text-white transition-colors w-full text-left">Conditions d'utilisation</button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent 
+                    className="max-w-2xl"
+                    aria-describedby="terms-description"
+                  >
                     <DialogHeader>
                       <DialogTitle>Conditions d'utilisation</DialogTitle>
                     </DialogHeader>
+                    
+                    {/* Description pour l'accessibilité */}
+                    <div id="terms-description" className="sr-only">
+                      Conditions d'utilisation de la plateforme
+                    </div>
+                    
                     <Terms />
                   </DialogContent>
                 </Dialog>
@@ -86,10 +104,19 @@ const Footer = () => {
                   <DialogTrigger asChild>
                     <button className="text-gray-300 hover:text-white transition-colors w-full text-left">Politique de confidentialité</button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent 
+                    className="max-w-2xl"
+                    aria-describedby="privacy-description"
+                  >
                     <DialogHeader>
                       <DialogTitle>Politique de confidentialité</DialogTitle>
                     </DialogHeader>
+                    
+                    {/* Description pour l'accessibilité */}
+                    <div id="privacy-description" className="sr-only">
+                      Politique de confidentialité de la plateforme
+                    </div>
+                    
                     <Privacy />
                   </DialogContent>
                 </Dialog>
@@ -111,7 +138,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center">
                 <Mail className="h-5 w-5 text-lokaz-orange mr-3 flex-shrink-0" />
-                <span className="text-gray-300">lokazsu228@gmail.com</span>
+                <span className="text-gray-300">immonbbc@gmail.com</span>
               </div>
             </div>
 
@@ -130,7 +157,7 @@ const Footer = () => {
         {/* Copyright */}
         <div className="border-t border-gray-700 mt-12 pt-8 text-center">
           <p className="text-gray-400">
-            © 2024 Lokaz. Tous droits réservés. Plateforme développée avec ❤️ au Togo.
+            © 2024 NBBC Immo. Tous droits réservés. Plateforme développée avec ❤️ au Togo.
           </p>
         </div>
       </div>

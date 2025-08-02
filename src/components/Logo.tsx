@@ -3,48 +3,41 @@ import React from 'react';
 
 const Logo = ({ className = "h-8 w-auto" }: { className?: string }) => {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 120 40"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Maison stylisée avec toit africain */}
-      <path
-        d="M8 32V20L16 12L24 20V32H20V24H12V32H8Z"
-        fill="#e49a33"
-        stroke="#f4a640"
-        strokeWidth="1"
+    <div className={`flex items-center ${className}`}>
+      {/* Logo NBBC Immo - chemin mis à jour */}
+      <img 
+        src="/AppImages/favicon.png" 
+        alt="NBBC IMMO" 
+        className="h-full w-auto"
+        onError={(e) => {
+          // Fallback vers le SVG si l'image ne se charge pas
+          e.currentTarget.style.display = 'none';
+          const parent = e.currentTarget.parentElement;
+          if (parent) {
+            parent.innerHTML = `
+              <svg
+                class="${className}"
+                viewBox="0 0 200 60"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <text
+                  x="100"
+                  y="35"
+                  fontFamily="Arial, sans-serif"
+                  fontSize="32"
+                  fontWeight="bold"
+                  fill="#f97316"
+                  textAnchor="middle"
+                >
+                  NBBC IMMO
+                </text>
+              </svg>
+            `;
+          }
+        }}
       />
-      {/* Porte */}
-      <rect x="14" y="26" width="4" height="6" fill="#0c0c0c" rx="0.5" />
-      {/* Fenêtre */}
-      <rect x="18" y="18" width="4" height="4" fill="#ffffff" stroke="#e49a33" strokeWidth="0.5" />
-      
-      {/* Motif africain décoratif */}
-      <circle cx="6" cy="14" r="2" fill="#f4a640" opacity="0.6" />
-      <circle cx="26" cy="16" r="1.5" fill="#e49a33" opacity="0.8" />
-      
-      {/* Texte LOKAZ */}
-      <text
-        x="36"
-        y="28"
-        fontFamily="Baloo 2, cursive"
-        fontSize="20"
-        fontWeight="700"
-        fill="#0c0c0c"
-      >
-        Lokaz
-      </text>
-      
-      {/* Accent décoratif sous le texte */}
-      <path
-        d="M36 32 L70 32"
-        stroke="#e49a33"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
+    </div>
   );
 };
 

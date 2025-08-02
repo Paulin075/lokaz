@@ -126,7 +126,10 @@ const MonthlyBillingModal: React.FC<MonthlyBillingModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent 
+        className="max-w-2xl"
+        aria-describedby="monthly-billing-description"
+      >
         <DialogHeader>
           <div className="flex justify-between items-center">
             <DialogTitle className="flex items-center gap-2">
@@ -138,7 +141,12 @@ const MonthlyBillingModal: React.FC<MonthlyBillingModalProps> = ({
             </Button>
           </div>
         </DialogHeader>
-
+        
+        {/* Description pour l'accessibilité */}
+        <div id="monthly-billing-description" className="sr-only">
+          Formulaire de facturation mensuelle pour les consommations d'eau et d'électricité
+        </div>
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <Alert variant="destructive">

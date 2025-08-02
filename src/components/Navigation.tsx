@@ -63,11 +63,14 @@ const Navigation = () => {
 
           {/* Navigation Desktop */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors duration-200 ${currentPath === '/' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}>
+            <a
+              href={user ? "/dashboard" : "/home"}
+              className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors duration-200 ${currentPath === '/home' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}
+            >
               <Home className="h-4 w-4" />
               Accueil
-            </Link>
-            <Link to="/search" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors duration-200 ${currentPath === '/search' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}>
+            </a>
+            <Link to="/search" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors duration-200 ${currentPath === '/search' || currentPath === '/' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}>
               <Search className="h-4 w-4" />
               Rechercher
             </Link>
@@ -163,11 +166,14 @@ const Navigation = () => {
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-100 py-4 animate-fade-in">
             <div className="flex flex-col space-y-4">
-              <Link to="/" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors ${currentPath === '/' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}>
+              <a
+                href={user ? "/dashboard" : "/home"}
+                className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors ${currentPath === '/home' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}
+              >
                 <Home className="h-4 w-4" />
                 Accueil
-              </Link>
-              <Link to="/search" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors ${currentPath === '/search' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}>
+              </a>
+              <Link to="/search" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors ${currentPath === '/search' || currentPath === '/' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}>
                 <Search className="h-4 w-4" />
                 Rechercher
               </Link>

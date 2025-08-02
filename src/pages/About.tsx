@@ -1,54 +1,90 @@
-
-import React from 'react'
-import Navigation from '@/components/Navigation'
-import Footer from '@/components/Footer'
-import { Card, CardContent } from '@/components/ui/card'
-import { Home, Users, Shield, Zap, Heart, Award } from 'lucide-react'
+import React from "react";
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
+import { Card, CardContent } from "@/components/ui/card";
+import { Home, Users, Shield, Zap, Heart, Award } from "lucide-react";
 
 const About = () => {
   const features = [
     {
       icon: Home,
       title: "Logements de qualité",
-      description: "Nous sélectionnons rigoureusement chaque propriété pour garantir votre confort et votre sécurité."
+      description:
+        "Nous sélectionnons rigoureusement chaque propriété pour garantir votre confort et votre sécurité.",
     },
     {
       icon: Users,
       title: "Communauté locale",
-      description: "Connectez-vous avec des propriétaires et locataires de confiance partout au Togo."
+      description:
+        "Connectez-vous avec des propriétaires et locataires de confiance partout au Togo.",
     },
     {
       icon: Shield,
       title: "Sécurité garantie",
-      description: "Transactions sécurisées, vérification des identités et support client 24/7."
+      description:
+        "Transactions sécurisées, vérification des identités et support client 24/7.",
     },
     {
       icon: Zap,
       title: "Chap-Chap",
-      description: "Service express pour les locations urgentes à l'heure ou à la journée."
-    }
-  ]
+      description:
+        "Service express pour les locations urgentes à l'heure ou à la journée.",
+    },
+  ];
 
   const stats = [
     { value: "500+", label: "Logements disponibles" },
     { value: "1000+", label: "Clients satisfaits" },
     { value: "50+", label: "Villes couvertes" },
-    { value: "24/7", label: "Support client" }
-  ]
+    { value: "24/7", label: "Support client" },
+  ];
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="À Propos de NBBC Immo - Notre Mission & Vision"
+        description="🏠 Découvrez NBBC Immo, la plateforme immobilière innovante du Togo. Notre mission : connecter propriétaires et locataires pour un marché immobilier transparent et accessible."
+        keywords="à propos NBBC Immo, mission immobilier Togo, équipe NBBC, valeurs plateforme immobilière, innovation logement Lomé"
+        canonical="https://nbbcimmo.com/about"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          name: "À Propos de NBBC Immo",
+          description:
+            "Page à propos de NBBC Immo, plateforme immobilière du Togo",
+          mainEntity: {
+            "@type": "Organization",
+            "@id": "https://nbbcimmo.com/#organization",
+            name: "NBBC Immo",
+            foundingDate: "2024",
+            founders: [
+              {
+                "@type": "Person",
+                name: "Équipe NBBC",
+              },
+            ],
+            knowsAbout: [
+              "Immobilier",
+              "Location",
+              "Technologie",
+              "Service client",
+            ],
+          },
+        }}
+      />
       <Navigation />
-      
+
       <div className="container mx-auto px-4 py-12">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold font-baloo text-lokaz-black mb-6">
-            À propos de <span className="text-lokaz-orange">Lokaz</span>
+            À propos de <span className="text-lokaz-orange">NBBC Immo</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Lokaz révolutionne la location immobilière au Togo en connectant propriétaires et locataires 
-            sur une plateforme moderne, sécurisée et adaptée aux besoins locaux.
+            NBBC Immo révolutionne la location immobilière au Togo en connectant
+            propriétaires et locataires sur une plateforme moderne, sécurisée et
+            adaptée aux besoins locaux.
           </p>
         </div>
 
@@ -59,12 +95,14 @@ const About = () => {
               Notre Mission
             </h2>
             <p className="text-gray-600 mb-4">
-              Faciliter l'accès au logement pour tous les Togolais en proposant une plateforme 
-              intuitive qui simplifie la recherche, la réservation et la gestion locative.
+              Faciliter l'accès au logement pour tous les Togolais en proposant
+              une plateforme intuitive qui simplifie la recherche, la
+              réservation et la gestion locative.
             </p>
             <p className="text-gray-600 mb-4">
-              Nous croyons que chacun mérite un logement de qualité, et nous travaillons chaque jour 
-              pour rendre cette vision réalité à travers la technologie et l'innovation.
+              Nous croyons que chacun mérite un logement de qualité, et nous
+              travaillons chaque jour pour rendre cette vision réalité à travers
+              la technologie et l'innovation.
             </p>
             <div className="flex items-center gap-4">
               <Heart className="h-8 w-8 text-lokaz-orange" />
@@ -90,16 +128,21 @@ const About = () => {
         {/* Features Section */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold font-baloo text-lokaz-black text-center mb-12">
-            Pourquoi choisir Lokaz ?
+            Pourquoi choisir nbbc solution ?
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, index) => (
-              <Card key={index} className="text-center p-6 hover:shadow-lg transition-shadow">
+              <Card
+                key={index}
+                className="text-center p-6 hover:shadow-lg transition-shadow"
+              >
                 <CardContent className="pt-6">
                   <div className="bg-lokaz-orange/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <feature.icon className="h-8 w-8 text-lokaz-orange" />
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
+                  <h3 className="font-semibold text-lg mb-2">
+                    {feature.title}
+                  </h3>
                   <p className="text-gray-600 text-sm">{feature.description}</p>
                 </CardContent>
               </Card>
@@ -131,14 +174,16 @@ const About = () => {
               <div className="text-4xl mb-4">🤝</div>
               <h3 className="font-semibold text-xl mb-2">Confiance</h3>
               <p className="text-gray-600">
-                Nous privilégions la transparence et l'honnêteté dans toutes nos interactions.
+                Nous privilégions la transparence et l'honnêteté dans toutes nos
+                interactions.
               </p>
             </div>
             <div className="p-6">
               <div className="text-4xl mb-4">🚀</div>
               <h3 className="font-semibold text-xl mb-2">Innovation</h3>
               <p className="text-gray-600">
-                Nous utilisons les dernières technologies pour améliorer votre expérience.
+                Nous utilisons les dernières technologies pour améliorer votre
+                expérience.
               </p>
             </div>
             <div className="p-6">
@@ -157,12 +202,13 @@ const About = () => {
             Une question ? Contactez-nous !
           </h2>
           <p className="text-gray-600 mb-6">
-            Notre équipe est là pour vous accompagner dans votre recherche de logement.
+            Notre équipe est là pour vous accompagner dans votre recherche de
+            logement.
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <div className="flex items-center gap-2">
               <span className="text-lokaz-orange">📧</span>
-              <span>lokazsu228@gmail.com</span>
+              <span>immonbbc@gmail.com</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-lokaz-orange">📞</span>
@@ -178,7 +224,7 @@ const About = () => {
 
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default About
+export default About;

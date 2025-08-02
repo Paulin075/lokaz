@@ -225,7 +225,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
           Créer un compte
         </CardTitle>
         <CardDescription>
-          Rejoignez Lokaz dès aujourd'hui
+          Rejoignez NBBC Immo dès aujourd'hui
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -38,6 +38,7 @@ const PropertyModal: React.FC<PropertyModalProps> = ({
     description: '',
     adresse: '',
     ville: '',
+    quartier: '',
     prix_eau: '',
     prix_electricite: ''
   })
@@ -49,6 +50,7 @@ const PropertyModal: React.FC<PropertyModalProps> = ({
         description: property.description || '',
         adresse: property.adresse || '',
         ville: property.ville || '',
+        quartier: property.quartier || '',
         prix_eau: property.prix_eau ? property.prix_eau.toString() : '',
         prix_electricite: property.prix_electricite ? property.prix_electricite.toString() : ''
       })
@@ -65,6 +67,7 @@ const PropertyModal: React.FC<PropertyModalProps> = ({
         description: '',
         adresse: '',
         ville: '',
+        quartier: '',
         prix_eau: '',
         prix_electricite: ''
       })
@@ -157,6 +160,7 @@ const PropertyModal: React.FC<PropertyModalProps> = ({
             description: formData.description,
             adresse: formData.adresse,
             ville: formData.ville,
+            quartier: formData.quartier,
             prix_eau: parseFloat(formData.prix_eau) || 0,
             prix_electricite: parseFloat(formData.prix_electricite) || 0,
             photos: JSON.stringify(photoUrls)
@@ -174,6 +178,7 @@ const PropertyModal: React.FC<PropertyModalProps> = ({
             description: formData.description,
             adresse: formData.adresse,
             ville: formData.ville,
+            quartier: formData.quartier,
             prix_eau: parseFloat(formData.prix_eau) || 0,
             prix_electricite: parseFloat(formData.prix_electricite) || 0,
             photos: JSON.stringify(photoUrls)
@@ -233,6 +238,16 @@ const PropertyModal: React.FC<PropertyModalProps> = ({
                 required
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="quartier">Quartier *</Label>
+            <Input
+              id="quartier"
+              value={formData.quartier}
+              onChange={(e) => setFormData(prev => ({ ...prev, quartier: e.target.value }))}
+              placeholder="Ex: Tokoin, Bé, Agoè, etc."
+              required
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>

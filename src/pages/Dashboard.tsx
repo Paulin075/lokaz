@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navigation from '@/components/Navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -30,12 +30,17 @@ import {
   MapPin,
   Ruler,
   Bed,
-  Sofa
+  Sofa,
+  Phone,
+  Mail,
+  Building2
 } from 'lucide-react'
 import PropertyModal from '@/components/PropertyModal'
+import PropertyDetailsModal from '@/components/PropertyDetailsModal'
 import ProfileModal from '@/components/ProfileModal'
 import EnhancedReservationModal from '@/components/booking/EnhancedReservationModal'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import TerrainModal from '@/components/TerrainModal'
 
 // Fonction utilitaire pour regrouper les messages par conversation (copiée de Messages.tsx)
 function groupMessagesByConversation(messages, userId) {
@@ -102,6 +107,11 @@ const Dashboard = () => {
   const [reservationDetailOpen, setReservationDetailOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<any>(null);
   const [lastUnreadCount, setLastUnreadCount] = useState(0);
+  const [showPropertyModal, setShowPropertyModal] = useState(false);
+  const [showTerrainModal, setShowTerrainModal] = useState(false);
+  const [selectedTerrain, setSelectedTerrain] = useState(null)
+  const [terrains, setTerrains] = useState([])
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
 
   // Ajout refs pour scroll automatique
   const reservationsRef = useRef(null);
@@ -123,10 +133,11 @@ const Dashboard = () => {
     // Log pour déboguer les états
     console.log('Dashboard - userData:', userData)
     console.log('Dashboard - loading:', loading)
-    console.log('Dashboard - reservations:', reservations)
     console.log('Dashboard - properties:', properties)
+    console.log('Dashboard - chambres:', chambres)
+    console.log('Dashboard - reservations:', reservations)
     console.log('Dashboard - messages:', messages)
-  }, [userData, loading, reservations, properties, messages])
+  }, [userData, loading, properties, chambres, reservations, messages])
 
   useEffect(() => {
     if (reservationDetailOpen && selectedReservation) {
@@ -164,311 +175,225 @@ const Dashboard = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, [userData]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
+    if (!userData) return;
+
+    setLoading(true);
+    setFetchError(null);
+
     try {
-      setLoading(true)
-      console.log('Fetching dashboard data for user:', userData)
+      console.log('Dashboard - Début fetchDashboardData pour user:', userData.id);
 
-      if (userData?.type_utilisateur === 'admin') {
-        // Données pour admin
-        const { data: allReservations } = await supabase
-          .from('reservations')
-          .select(`*, nombre_heures, utilisateurs!reservations_id_locataire_fkey(nom, prenom, email, telephone), chambres(numero_chambre, adresse, prix)`)
-          .order('date_debut', { ascending: false })
-
-        const { data: allProperties } = await supabase
-          .from('chambres')
-          .select(`
+      // Fetch des réservations - requête simplifiée
+      let reservationsData = [];
+      
+      // Récupérer les réservations où l'utilisateur est locataire
+      const { data: locataireReservations, error: locataireError } = await supabase
+        .from('reservations')
+        .select(`
+          *,
+          chambres!id_chambre (
             *,
-            maisons(titre, ville, prix_eau, prix_electricite, id_proprietaire)
-          `)
+            proprietaire:utilisateurs!id_proprietaire (*)
+          ),
+          utilisateurs!id_locataire (*)
+        `)
+        .eq('id_locataire', userData.id)
+        .order('date_debut', { ascending: false });
 
-        const { data: allMessages } = await supabase
-          .from('messages')
-          .select(`
+      if (locataireError) {
+        console.error('Erreur fetch réservations locataire:', locataireError);
+      } else {
+        console.log('Réservations locataire récupérées:', locataireReservations);
+        reservationsData = [...(locataireReservations || [])];
+      }
+
+      // Récupérer les réservations où l'utilisateur est propriétaire
+      const { data: proprietaireReservations, error: proprietaireError } = await supabase
+        .from('reservations')
+        .select(`
+          *,
+          chambres!id_chambre (
             *,
-            utilisateurs!messages_expediteur_id_fkey(nom, prenom),
-            utilisateurs!messages_destinataire_id_fkey(nom, prenom)
-          `)
-          .order('date_envoi', { ascending: false })
+            proprietaire:utilisateurs!id_proprietaire (*)
+          ),
+          utilisateurs!id_locataire (*)
+        `)
+        .order('date_debut', { ascending: false });
 
-        setReservations(allReservations || [])
-        setProperties(allProperties || [])
-        setMessages(allMessages || [])
+      if (proprietaireError) {
+        console.error('Erreur fetch réservations propriétaire:', proprietaireError);
+      } else {
+        console.log('Réservations propriétaire récupérées:', proprietaireReservations);
+        // Filtrer côté client pour les réservations où l'utilisateur est propriétaire
+        const filteredProprietaireReservations = (proprietaireReservations || []).filter(reservation => {
+          return reservation.chambres?.id_proprietaire === userData.id;
+        });
+        reservationsData = [...reservationsData, ...filteredProprietaireReservations];
+      }
 
-        // Calculer les statistiques admin
-        const totalRevenue = allReservations?.reduce((sum, res) => sum + (res.total_a_payer || 0), 0) || 0
-        const pendingReservations = allReservations?.filter(r => r.statut === 'en_attente').length || 0
-        
-        setStats({
-          totalReservations: allReservations?.length || 0,
-          totalRevenue,
-          activeProperties: allProperties?.filter(p => p.disponible).length || 0,
-          unreadMessages: allMessages?.filter(m => !m.lu).length || 0,
-          pendingReservations,
-          monthlyGrowth: 12 // Exemple
-        })
+      // Fetch des propriétés
+      const { data: propertiesData, error: propertiesError } = await supabase
+        .from('maisons')
+        .select('*')
+        .eq('id_proprietaire', userData.id)
+        .order('date_publication', { ascending: false });
 
-      } else if (userData?.type_utilisateur === 'proprietaire') {
-        // 1. Récupérer les maisons du propriétaire
-        const { data: myMaisons, error: maisonError } = await supabase
-          .from('maisons')
-          .select('*')
-          .eq('id_proprietaire', userData.id)
-        if (maisonError) {
-          console.error('Error fetching maisons:', maisonError)
-        }
-        // 2. Récupérer les chambres du propriétaire
-        let myChambres = []
-        let maisonIds = []
-        if (myMaisons && myMaisons.length > 0) {
-          maisonIds = myMaisons.map(m => m.id)
-          const { data: chambresData, error: chambresError } = await supabase
-            .from('chambres')
-            .select('*')
-            .in('id_maison', maisonIds)
-          if (chambresError) {
-            console.error('Error fetching chambres:', chambresError)
-          }
-          myChambres = chambresData || []
-        }
-        // Récupère aussi les chambres sans maison mais avec id_proprietaire = userData.id
-        const { data: chambresDirectes, error: chambresDirectesError } = await supabase
-          .from('chambres')
-          .select('*')
-          .is('id_maison', null)
-          .eq('id_proprietaire', userData.id)
+      if (propertiesError) {
+        console.error('Erreur fetch propriétés:', propertiesError);
+        throw new Error(`Erreur propriétés: ${propertiesError.message}`);
+      }
+
+      // Fetch des chambres - requête complète
+      let chambresData = [];
+      
+      // 1. Récupérer les chambres avec id_proprietaire direct
+      const { data: chambresDirectes, error: chambresDirectesError } = await supabase
+        .from('chambres')
+        .select('*')
+        .eq('id_proprietaire', userData.id)
+        .order('id', { ascending: false });
+
         if (chambresDirectesError) {
-          console.error('Error fetching chambres directes:', chambresDirectesError)
+        console.error('Erreur fetch chambres directes:', chambresDirectesError);
+      } else {
+        chambresData = [...(chambresDirectes || [])];
+      }
+
+      // 2. Récupérer les chambres liées aux maisons du propriétaire
+      if (propertiesData && propertiesData.length > 0) {
+        const maisonIds = propertiesData.map(m => m.id);
+        const { data: chambresViaMaisons, error: chambresViaMaisonsError } = await supabase
+          .from('chambres')
+          .select('*')
+          .in('id_maison', maisonIds)
+          .order('id', { ascending: false });
+
+        if (chambresViaMaisonsError) {
+          console.error('Erreur fetch chambres via maisons:', chambresViaMaisonsError);
+          } else {
+          // Éviter les doublons en filtrant par ID
+          const chambresUniques = (chambresViaMaisons || []).filter(chambre => 
+            !chambresData.some(existing => existing.id === chambre.id)
+          );
+          chambresData = [...chambresData, ...chambresUniques];
         }
-        // Fusionne les deux listes (en évitant les doublons par id)
-        const allChambres = [
-          ...(myChambres || []),
-          ...(chambresDirectes || [])
-        ].filter((ch, idx, arr) => arr.findIndex(c2 => c2.id === ch.id) === idx)
-        setChambres && setChambres(allChambres)
-        // Récupération des réservations pour toutes les chambres du propriétaire
-        let myReservations = []
-        if (allChambres && allChambres.length > 0) {
-          const chambresAvecMaison = allChambres.filter(c => c.id_maison)
-          const chambresSansMaison = allChambres.filter(c => !c.id_maison)
+      }
 
-          // Chambres avec maison (jointure profonde)
-          let reservationsAvecMaison = []
-          if (chambresAvecMaison.length > 0) {
-            const chambreIds = chambresAvecMaison.map(c => c.id)
-            const { data, error } = await supabase
-              .from('reservations')
-              .select(`*, locataire:utilisateurs!reservations_id_locataire_fkey(nom, prenom, telephone), chambre:chambres!reservations_id_chambre_fkey(
-                id, numero_chambre, photos, adresse, id_maison, prix, prix_jour, prix_heure,
-                maison:maisons!chambres_id_maison_fkey(
-                  titre, ville, id_proprietaire
-                )
-              )`)
-              .in('id_chambre', chambreIds)
-            if (error) {
-              console.error('Error fetching reservations (avec maison):', error)
-            }
-            reservationsAvecMaison = data || []
-          }
+      console.log('Chambres récupérées:', {
+        chambresDirectes: chambresDirectes?.length || 0,
+        chambresViaMaisons: chambresData.length - (chambresDirectes?.length || 0),
+        totalChambres: chambresData.length
+      });
 
-          // Chambres sans maison (pas de jointure)
-          let reservationsSansMaison = []
-          if (chambresSansMaison.length > 0) {
-            const chambreIds = chambresSansMaison.map(c => c.id)
-            const { data, error } = await supabase
-              .from('reservations')
-              .select(`*, locataire:utilisateurs!reservations_id_locataire_fkey(nom, prenom, telephone), chambre:chambres!reservations_id_chambre_fkey(
-                id, numero_chambre, photos, adresse, id_maison, prix, prix_jour, prix_heure
-              )`)
-              .in('id_chambre', chambreIds)
-            if (error) {
-              console.error('Error fetching reservations (sans maison):', error)
-            }
-            reservationsSansMaison = data || []
-          }
+      // Diagnostic: Vérifier toutes les chambres disponibles
+      const { data: toutesChambres, error: toutesChambresError } = await supabase
+        .from('chambres')
+        .select('*')
+        .order('id', { ascending: false });
 
-          myReservations = [...reservationsAvecMaison, ...reservationsSansMaison]
-        }
-        setProperties(myMaisons || [])
-        setReservations(myReservations || [])
-        // --- Correction : récupération des messages reçus par le propriétaire ---
-        let allReceivedMessages = []
-        if (allChambres && allChambres.length > 0) {
-          const chambreIds = allChambres.map(c => c.id)
-          // On suppose que les locataires envoient des messages au propriétaire via les chambres
-          const { data: receivedMessages, error: receivedError } = await supabase
+      if (!toutesChambresError) {
+        console.log('Diagnostic - Toutes les chambres:', {
+          totalChambresDisponibles: toutesChambres?.length || 0,
+          chambresAvecProprietaire: toutesChambres?.filter(c => c.id_proprietaire === userData.id).length || 0,
+          chambresAvecMaison: toutesChambres?.filter(c => c.id_maison).length || 0
+        });
+      }
+
+      // Fetch des messages
+      const { data: messagesData, error: messagesError } = await supabase
             .from('messages')
             .select('*')
-            .in('destinataire_id', [userData.id])
-          if (receivedError) {
-            console.error('Error fetching received messages:', receivedError)
-          } else {
-            allReceivedMessages = receivedMessages || []
-          }
-        }
-        // 4. Calculer les stats
-        const totalRevenue = myReservations.filter(r => r.statut === 'confirmee').reduce((sum, r) => sum + (r.total_a_payer || 0), 0)
-        const pendingReservations = myReservations.filter(r => r.statut === 'en_attente').length
-        setStats({
-          totalReservations: myReservations.length,
-          totalRevenue,
-          activeProperties: myMaisons?.filter(m => m.disponible).length || 0,
-          unreadMessages: allReceivedMessages.filter(m => !m.lu && m.destinataire_id === userData.id).length || 0,
-          pendingReservations,
-          monthlyGrowth: 0
-        })
-        console.log('Messages non lus récupérés (dashboard):', allReceivedMessages.filter(m => !m.lu && m.destinataire_id === userData.id))
-      } else {
-        // Données pour locataire - utiliser l'UUID
-        console.log('Fetching data for locataire:', userData.id, userData.uuid)
-        
-        const { data: myReservations, error: resError } = await supabase
-          .from('reservations')
-          .select(`*,
-            locataire:utilisateurs!reservations_id_locataire_fkey(nom, prenom, telephone),
-            chambre:chambres!reservations_id_chambre_fkey(
-              numero_chambre,
-              photos,
-              adresse,
-              prix,
-              prix_jour,
-              prix_heure,
-              maison:maisons!chambres_id_maison_fkey(
-                titre,
-                ville,
-                id_proprietaire
-              )
-            )
-          `)
-          .eq('id_locataire', userData.id)
-          .order('date_debut', { ascending: false });
-        console.log('RES ERROR', resError, myReservations);
+        .or(`expediteur_id.eq.${userData.id},destinataire_id.eq.${userData.id}`)
+        .order('date_envoi', { ascending: false });
 
-        // Récupérer les infos propriétaires pour chaque réservation
-        let proprietaires = {};
-        if (myReservations && myReservations.length > 0) {
-          const ids = [...new Set(myReservations.map(r => r.chambre?.maison?.id_proprietaire).filter(Boolean))];
-          if (ids.length > 0) {
-            const { data: proprietairesData } = await supabase
-              .from('utilisateurs')
-              .select('id, nom, prenom, telephone')
-              .in('id', ids);
-            if (proprietairesData) {
-              proprietaires = Object.fromEntries(proprietairesData.map(u => [u.id, u]));
-            }
-          }
-        }
-        // Injecter les infos propriétaires dans chaque réservation
-        const reservationsWithProprietaire = (myReservations || []).map(r => {
-          if (r.chambre?.maison?.id_proprietaire && proprietaires[r.chambre.maison.id_proprietaire]) {
-            r.chambre.maison.proprietaire = proprietaires[r.chambre.maison.id_proprietaire];
-          }
-          return r;
-        });
-        setReservations(reservationsWithProprietaire);
-
-        console.log('Locataire reservations query:', { myReservations, resError })
-
-        if (resError) {
-          console.error('Error fetching locataire reservations:', resError)
-        }
-
-        // Récupérer les messages de l'utilisateur avec une requête simplifiée
-        let myMessages = []
-        try {
-          // Requête très simple pour éviter les erreurs 403
-          console.log('Tentative de récupération des messages pour utilisateur:', userData.id)
-          
-          // Essayer d'abord les messages envoyés
-          const { data: sentMessages, error: sentError } = await supabase
-            .from('messages')
-            .select('id, expediteur_id, destinataire_id, contenu, date_envoi, lu')
-            .eq('expediteur_id', userData.id)
-
-          if (sentError) {
-            console.error('Error fetching sent messages:', sentError)
-            // Si erreur 403, on ignore les messages pour l'instant
-            if (sentError.code === '403') {
-              console.log('Erreur 403 détectée, on ignore les messages')
-              setMessages([])
-            } else {
-              setMessages([])
-            }
-          } else {
-            // Essayer les messages reçus
-            const { data: receivedMessages, error: receivedError } = await supabase
-              .from('messages')
-              .select('id, expediteur_id, destinataire_id, contenu, date_envoi, lu')
-              .eq('destinataire_id', userData.id)
-
-            if (receivedError) {
-              console.error('Error fetching received messages:', receivedError)
-              myMessages = sentMessages || []
-            } else {
-              // Combiner et trier les messages
-              const allMessages = [...(sentMessages || []), ...(receivedMessages || [])]
-              myMessages = allMessages.sort((a, b) => new Date(b.date_envoi).getTime() - new Date(a.date_envoi).getTime())
-            }
-            
-            setMessages(myMessages)
-            console.log('Messages récupérés avec succès:', myMessages.length)
-          }
-        } catch (error) {
-          console.error('Error in messages query:', error)
-          setMessages([])
-        }
-
-        // Calculer les statistiques locataire
-        // Ancien code :
-        // const totalSpent = myReservations?.reduce((sum, res) => sum + (res.total_a_payer || 0), 0) || 0
-        // Correction : ne prendre en compte que les réservations confirmées
-        const totalSpent = myReservations?.filter(r => r.statut === 'confirmee').reduce((sum, res) => sum + (res.total_a_payer || 0), 0) || 0
-        const activeReservations = myReservations?.filter(r => r.statut === 'confirmee').length || 0
-        
-        // Récupérer les messages reçus par le locataire
-        let allReceivedMessages = [];
-        const { data: receivedMessages, error: receivedError } = await supabase
-          .from('messages')
-          .select('*')
-          .eq('destinataire_id', userData.id);
-        if (receivedError) {
-          console.error('Error fetching received messages (locataire):', receivedError);
-        } else {
-          allReceivedMessages = receivedMessages || [];
-        }
-        setStats({
-          totalReservations: myReservations?.length || 0,
-          totalRevenue: totalSpent,
-          activeProperties: activeReservations,
-          unreadMessages: allReceivedMessages.filter(m => !m.lu && m.destinataire_id === userData.id).length || 0,
-          pendingReservations: myReservations?.filter(r => r.statut === 'en_attente').length || 0,
-          monthlyGrowth: 5
-        });
-        console.log('Messages non lus récupérés (dashboard locataire):', allReceivedMessages.filter(m => !m.lu && m.destinataire_id === userData.id));
+      if (messagesError) {
+        console.error('Erreur fetch messages:', messagesError);
+        throw new Error(`Erreur messages: ${messagesError.message}`);
       }
 
-    } catch (error: any) {
-      console.error('Erreur lors du chargement des données:', error)
-      if (error?.code === '403') {
-        setFetchError("Vous n'avez pas les droits pour accéder à ces données. Contactez l'administrateur ou vérifiez vos permissions Supabase.");
-        toast({
-          title: "Accès interdit",
-          description: "Erreur 403 : Vous n'avez pas les droits pour accéder à ces données.",
-          variant: "destructive"
-        });
-      } else {
-        setFetchError("Impossible de charger les données du dashboard.");
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les données du dashboard",
-          variant: "destructive"
-        });
+      // Fetch des terrains
+      const { data: terrainsData, error: terrainsError } = await supabase
+        .from('terrains')
+        .select('*')
+        .eq('id_proprietaire', userData.id)
+        .order('date_publication', { ascending: false });
+
+      if (terrainsError) {
+        console.error('Erreur fetch terrains:', terrainsError);
       }
+
+      setReservations(reservationsData);
+      setProperties(propertiesData || []);
+      setChambres(chambresData || []);
+      setMessages(messagesData || []);
+      setTerrains(terrainsData || []);
+
+      // Calculer les statistiques
+      const totalReservations = reservationsData.length;
+      const totalRevenue = reservationsData
+        .filter(r => r.statut === 'confirmee')
+        .reduce((sum, r) => sum + (r.total_a_payer || 0), 0);
+      
+      // Propriétés actives = maisons disponibles + chambres disponibles + terrains disponibles
+      const activeMaisons = (propertiesData || []).filter(p => p.disponible).length;
+      const activeChambres = (chambresData || []).filter(c => c.disponible).length;
+      const activeTerrains = (terrainsData || []).filter(t => t.statut_vente === 'disponible').length;
+      const activeProperties = activeMaisons + activeChambres + activeTerrains;
+      
+      const unreadMessages = (messagesData || []).filter(m => !m.lu && m.destinataire_id === userData.id).length;
+      const pendingReservations = reservationsData.filter(r => r.statut === 'en_attente').length;
+      const monthlyGrowth = 0; // À calculer selon tes besoins
+
+      console.log('Données brutes:', {
+        reservationsData: reservationsData.length,
+        propertiesData: propertiesData?.length || 0,
+        chambresData: chambresData?.length || 0,
+        messagesData: messagesData?.length || 0,
+        userData: userData.id
+      });
+
+      console.log('Calculs détaillés:', {
+        totalReservations,
+        reservationsConfirmees: reservationsData.filter(r => r.statut === 'confirmee').length,
+        totalRevenue,
+        activeMaisons,
+        activeChambres,
+        activeProperties,
+        unreadMessages,
+        messagesNonLus: (messagesData || []).filter(m => !m.lu && m.destinataire_id === userData.id).length,
+        pendingReservations
+      });
+
+        setStats({
+        totalReservations,
+        totalRevenue,
+        activeProperties,
+        unreadMessages,
+        pendingReservations,
+        monthlyGrowth
+      });
+
+      console.log('Dashboard - Données récupérées avec succès');
+      console.log('Stats calculées:', {
+        totalReservations,
+        totalRevenue,
+        activeProperties,
+        unreadMessages,
+        pendingReservations
+      });
+    } catch (error) {
+      console.error('Erreur fetchDashboardData:', error);
+      setFetchError(error.message);
+        toast({
+        title: 'Erreur de chargement',
+        description: `Impossible de charger les données: ${error.message}`,
+        variant: 'destructive',
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  }, [userData, toast]);
 
   const handleReservationStatus = async (reservationId: number, newStatus: string) => {
     try {
@@ -614,29 +539,85 @@ const Dashboard = () => {
 
   // Ajout de la fonction pour supprimer une chambre
   const handleDeleteChambre = async (chambreId: number) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette chambre ?')) {
     try {
-      const { error: chambreError, data: deletedChambre } = await supabase
+        const { error } = await supabase
         .from('chambres')
         .delete()
-        .eq('id', chambreId)
-        .select('id')
-      if (chambreError || !deletedChambre || deletedChambre.length === 0) {
-        throw chambreError || new Error('Aucune location supprimée')
+          .eq('id', chambreId);
+
+        if (error) throw error;
+
+        toast({
+          title: "Succès",
+          description: "Chambre supprimée avec succès",
+        });
+
+        fetchDashboardData();
+      } catch (error) {
+        console.error('Erreur lors de la suppression:', error);
+        toast({
+          title: "Erreur",
+          description: "Erreur lors de la suppression de la chambre",
+          variant: "destructive",
+        });
       }
-      toast({
-        title: "Location supprimée",
-        description: "La location a été supprimée avec succès"
-      })
-      fetchDashboardData()
-    } catch (error) {
-      console.error('Erreur:', error)
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer la location",
-        variant: "destructive"
-      })
     }
   }
+
+  const handleDeleteTerrain = async (terrainId: number) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce terrain ?')) {
+      try {
+        const { error } = await supabase
+          .from('terrains')
+          .delete()
+          .eq('id', terrainId);
+
+        if (error) throw error;
+
+      toast({
+          title: "Succès",
+          description: "Terrain supprimé avec succès",
+        });
+
+        fetchDashboardData();
+    } catch (error) {
+        console.error('Erreur lors de la suppression:', error);
+      toast({
+        title: "Erreur",
+          description: "Erreur lors de la suppression du terrain",
+          variant: "destructive",
+        });
+      }
+    }
+  }
+
+  const handleToggleTerrainStatus = async (terrainId: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'disponible' ? 'vendu' : 'disponible';
+    
+    try {
+      const { error } = await supabase
+        .from('terrains')
+        .update({ statut_vente: newStatus })
+        .eq('id', terrainId);
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Succès',
+        description: `Terrain marqué comme ${newStatus === 'vendu' ? 'vendu' : 'disponible'}`,
+      });
+      
+      fetchDashboardData();
+    } catch (error) {
+      console.error('Erreur mise à jour statut terrain:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour le statut du terrain',
+        variant: 'destructive',
+      });
+    }
+  };
 
   // Synchronise les contacts pour toutes les réservations confirmées (passées, en cours, à venir)
   const syncConfirmedReservationContacts = async () => {
@@ -726,6 +707,16 @@ const Dashboard = () => {
     setActiveTab(section);
   };
 
+  const handleViewDetails = (property) => {
+    setSelectedProperty(property)
+    setShowDetailsModal(true)
+  }
+
+  const handleEditProperty = (property) => {
+    setSelectedProperty(property)
+    setPropertyModalOpen(true)
+  }
+
   if (!authLoading && !loading && !userData) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
@@ -762,8 +753,9 @@ const Dashboard = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
       <Navigation />
+      <div className="min-h-screen bg-gray-50">
       
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
@@ -779,23 +771,23 @@ const Dashboard = () => {
           </div>
           
           <div className="flex gap-2">
+              {userData.type_utilisateur === 'proprietaire' && (
+                <div className="flex flex-col sm:flex-row gap-2">
             <Button 
-              onClick={() => setProfileModalOpen(true)}
-              variant="outline"
-              className="flex items-center gap-2"
+                  onClick={() => setPropertyModalOpen(true)}
+                  className="bg-lokaz-orange hover:bg-lokaz-orange-light w-full sm:w-auto"
             >
-              <User className="h-4 w-4" />
-              Mon Profil
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nouvelle propriété
             </Button>
-            
-            {userData.type_utilisateur === 'proprietaire' && (
               <Button 
-                onClick={() => setPropertyModalOpen(true)}
-                className="bg-lokaz-orange hover:bg-lokaz-orange-light flex items-center gap-2"
+                    onClick={() => setShowTerrainModal(true)}
+                    className="bg-lokaz-orange hover:bg-lokaz-orange-light w-full sm:w-auto"
               >
-                <Plus className="h-4 w-4" />
-                Ajouter une propriété
+                    <Plus className="h-4 w-4 mr-2" />
+                    Ajouter un terrain à vendre
               </Button>
+                </div>
             )}
           </div>
         </div>
@@ -971,18 +963,18 @@ const Dashboard = () => {
                         <div className="flex-1 mb-4 sm:mb-0">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="font-semibold text-lg">
-                              Chambre {reservation.chambre?.numero_chambre || '-'}
+                              Chambre {reservation.chambres?.numero_chambre || '-'}
                             </h3>
                             {getStatusBadge(reservation.statut)}
                           </div>
-                          {reservation.chambre?.maison && (
+                          {reservation.chambres?.adresse && (
                             <div className="flex items-center gap-2 text-sm text-gray-700 mb-1">
                               <Home className="h-4 w-4" />
-                              <span>{reservation.chambre.maison.titre}</span>
-                              {reservation.chambre.maison.ville && (
+                              <span>{reservation.chambres.adresse}</span>
+                              {reservation.chambres.ville && (
                                 <span className="ml-2 flex items-center gap-1">
                                   <MapPin className="h-4 w-4" />
-                                  {reservation.chambre.maison.ville}
+                                  {reservation.chambres.ville}
                                 </span>
                               )}
                             </div>
@@ -992,23 +984,25 @@ const Dashboard = () => {
                               <b>Nombre d'heures :</b> {reservation.nombre_heures || '-'}
                             </div>
                           )}
-                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-  <MapPin className="h-4 w-4" />
-  {/* Affiche la ville si elle existe, que ce soit via maison ou directement sur la chambre */}
-  {reservation.chambre?.maison?.ville || reservation.chambre?.ville ? (
-    <span>{reservation.chambre?.maison?.ville || reservation.chambre?.ville}</span>
-  ) : null}
-  {reservation.chambre?.adresse && (
-    <a
-      href={reservation.chambre.adresse}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="ml-2 text-lokaz-orange hover:underline"
-    >
-      Voir sur maps
-    </a>
-  )}
-</div>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-sm text-gray-600 mb-1">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4 flex-shrink-0" />
+                            {/* Affiche la ville si elle existe */}
+                            {reservation.chambres?.ville ? (
+                              <span className="truncate">{reservation.chambres.ville}</span>
+                            ) : null}
+                          </div>
+                          {reservation.chambres?.adresse && (
+                            <a
+                              href={reservation.chambres.adresse}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-lokaz-orange hover:underline text-xs sm:text-sm"
+                            >
+                              Voir sur maps
+                            </a>
+                          )}
+                        </div>
                           <div className="flex items-center gap-2 text-sm text-gray-500">
                             <Calendar className="h-4 w-4" />
                             Du {new Date(reservation.date_debut).toLocaleDateString()} 
@@ -1019,9 +1013,16 @@ const Dashboard = () => {
                               Locataire: {reservation.utilisateurs.prenom} {reservation.utilisateurs.nom}
                             </p>
                           )}
-                          {reservation.chambre?.maison && (
+                          {reservation.chambres?.adresse && (
                             <p className="text-sm text-gray-600 mt-1">
-                              Propriété: {reservation.chambre.maison.titre}
+                              <a
+                                href={reservation.chambres.adresse}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-lokaz-orange hover:underline"
+                              >
+                                Voir la propriété sur maps
+                              </a>
                             </p>
                           )}
                         </div>
@@ -1044,12 +1045,12 @@ const Dashboard = () => {
                             Détail
                           </Button>
                           {userData?.type_utilisateur === 'proprietaire' && reservation.statut === 'en_attente' && (
-                            <div className="flex flex-col sm:flex-row gap-2 w-full">
+                              <div className="flex flex-col sm:flex-row gap-2 w-full">
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleReservationStatus(reservation.id, 'confirmee')}
-                                className="w-full sm:w-auto text-green-600 border-green-600 hover:bg-green-50"
+                                  className="w-full sm:w-auto text-green-600 border-green-600 hover:bg-green-50"
                               >
                                 <CheckCircle className="h-4 w-4 mr-1" />
                                 Confirmer
@@ -1058,7 +1059,7 @@ const Dashboard = () => {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleReservationStatus(reservation.id, 'annulee')}
-                                className="w-full sm:w-auto text-red-600 border-red-600 hover:bg-red-50"
+                                  className="w-full sm:w-auto text-red-600 border-red-600 hover:bg-red-50"
                               >
                                 <XCircle className="h-4 w-4 mr-1" />
                                 Refuser
@@ -1100,19 +1101,28 @@ const Dashboard = () => {
             <TabsContent value="properties">
               <Card>
                 <CardHeader>
-                  <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-2">
                     <CardTitle className="flex items-center gap-2">
                       <Home className="h-5 w-5 text-lokaz-orange" />
                       {userData.type_utilisateur === 'admin' ? 'Toutes les propriétés' : 'Mes biens'}
                     </CardTitle>
                     {userData.type_utilisateur === 'proprietaire' && (
+                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                       <Button 
                         onClick={() => setPropertyModalOpen(true)}
-                        className="bg-lokaz-orange hover:bg-lokaz-orange-light"
+                          className="bg-lokaz-orange hover:bg-lokaz-orange-light w-full sm:w-auto"
                       >
                         <Plus className="h-4 w-4 mr-2" />
                         Nouvelle propriété
                       </Button>
+                          <Button 
+                            onClick={() => setShowTerrainModal(true)}
+                            className="bg-lokaz-orange hover:bg-lokaz-orange-light w-full sm:w-auto"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Ajouter un terrain à vendre
+                          </Button>
+                        </div>
                     )}
                   </div>
                 </CardHeader>
@@ -1138,57 +1148,242 @@ const Dashboard = () => {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {/* Afficher les maisons */}
+                      {properties && properties.length > 0 && (
+                        <div className="col-span-full mb-4">
+                          <h3 className="text-lg font-semibold mb-2">Maisons ({properties.length})</h3>
+                        </div>
+                      )}
                       {properties.map((maison: any) => (
-                        <Card key={maison.id} className="hover:shadow-lg transition-shadow group">
+                        <Card key={`maison-${maison.id}`} className="hover:shadow-lg transition-shadow group">
                           <CardContent className="p-0">
                             {maison.photos && (
                               <div className="relative h-48 overflow-hidden rounded-t-lg">
-                                <img
-                                  src={JSON.parse(maison.photos)[0] || '/placeholder.svg'}
-                                  alt={maison.titre}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
+                                {(() => {
+                                  try {
+                                    const photos = JSON.parse(maison.photos);
+                                    const imageUrl = photos && photos.length > 0 ? photos[0] : null;
+                                    return imageUrl ? (
+                                      <img
+                                        src={imageUrl}
+                                        alt={`Maison ${maison.titre}`}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = 'none';
+                                          const parent = e.currentTarget.parentElement;
+                                          if (parent) {
+                                            parent.innerHTML = '<div class=\"w-full h-full flex items-center justify-center bg-gray-100\"><p class=\"text-gray-500 text-sm\">Aucune image</p></div>';
+                                          }
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                        <p className="text-gray-500 text-sm">Aucune image</p>
+                                      </div>
+                                    );
+                                  } catch (e) {
+                                    return (
+                                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                        <p className="text-gray-500 text-sm">Aucune image</p>
+                                      </div>
+                                    );
+                                  }
+                                })()}
+                                <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm rounded-lg p-2">
+                                  <div className="text-right">
+                                    <div className="font-bold text-lg text-lokaz-orange">
+                                      {maison.prix_par_mois?.toLocaleString() || maison.prix_par_jour?.toLocaleString() || maison.prix_par_heure?.toLocaleString()} FCFA
+                                    </div>
+                                    <div className="text-xs text-gray-600">
+                                      {maison.type_location === 'mois' ? '/mois' : maison.type_location === 'jour' ? '/jour' : '/heure'}
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             )}
                             <div className="p-4">
-                                  <h3 className="font-bold text-lg text-lokaz-black">
-                                {maison.titre}
+                              <div className="flex items-start justify-between mb-3">
+                                <div>
+                                  <h3 className="font-bold text-lg text-lokaz-black flex items-center gap-2">
+                                    {maison.titre}
                                   </h3>
                                   <p className="text-sm text-gray-600 flex items-center gap-1">
-                                {maison.adresse && (
-                                  <a
-                                    href={maison.adresse}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-1 text-lokaz-orange hover:underline"
+                                    {maison.adresse && (
+                                      <a
+                                        href={maison.adresse}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 text-lokaz-orange hover:underline"
+                                      >
+                                        <MapPin className="h-4 w-4" />
+                                        <span>Voir sur maps</span>
+                                      </a>
+                                    )}
+                                  </p>
+                                  <div className="flex items-center gap-2 text-sm text-gray-600 mt-2">
+                                    <Ruler className="h-4 w-4" />
+                                    <span>{maison.ville}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                                    <Home className="h-4 w-4" />
+                                    <span>{maison.type_bien || 'Maison'}</span>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedProperty(maison);
+                                      setShowDetailsModal(true);
+                                    }}
                                   >
-                                    <MapPin className="h-4 w-4" />
-                                    <span>Voir sur maps</span>
-                                  </a>
-                                )}
-                              </p>
-                              <p className="text-sm text-gray-600 flex items-center gap-4 mt-2">
-                                <span className="flex items-center gap-1"><Ruler className="h-4 w-4" />{maison.superficie_m2} m²</span>
-                                <span className="flex items-center gap-1"><Bed className="h-4 w-4" />{maison.nb_chambres} ch.</span>
-                                <span className="flex items-center gap-1"><Sofa className="h-4 w-4" />{maison.nb_salons} salon</span>
-                              </p>
-                              <p className="text-sm text-gray-600 mt-2">
-                                {maison.description}
-                              </p>
-                              <div className="flex gap-2 mt-4">
-                                <Button variant="outline" size="sm" className="bg-lokaz-orange hover:bg-lokaz-orange-light text-white">
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  Voir
-                                </Button>
-                                <Button variant="outline" size="sm" className="bg-lokaz-orange hover:bg-lokaz-orange-light text-white" onClick={() => { setSelectedProperty(maison); setPropertyModalOpen(true); }}>
-                                  <Edit className="h-4 w-4 mr-1" />
-                                  Modifier
-                                    </Button>
-                                <Button variant="outline" size="sm" className="bg-red-600 hover:bg-red-700 text-white" onClick={() => handleDeleteProperty(maison.id)}>
-                                  <Trash2 className="h-4 w-4 mr-1" />
-                                  Supprimer
-                                    </Button>
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleEditProperty(maison)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleDeleteProperty(maison.id)}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+
+                      {/* Afficher les terrains */}
+                      {terrains && terrains.length > 0 && (
+                        <div className="col-span-full mb-4 mt-8">
+                          <h3 className="text-lg font-semibold mb-2">Terrains à vendre ({terrains.length})</h3>
+                        </div>
+                      )}
+                      {terrains.map((terrain: any) => (
+                        <Card key={`terrain-${terrain.id}`} className="hover:shadow-lg transition-shadow group">
+                          <CardContent className="p-0">
+                            {terrain.photos && (
+                              <div className="relative h-48 overflow-hidden rounded-t-lg">
+                                {(() => {
+                                  try {
+                                    const photos = JSON.parse(terrain.photos);
+                                    const imageUrl = photos && photos.length > 0 ? photos[0] : null;
+                                    return imageUrl ? (
+                                      <img
+                                        src={imageUrl}
+                                        alt={`Terrain ${terrain.titre}`}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = 'none';
+                                          const parent = e.currentTarget.parentElement;
+                                          if (parent) {
+                                            parent.innerHTML = '<div class=\"w-full h-full flex items-center justify-center bg-gray-100\"><p class=\"text-gray-500 text-sm\">Aucune image</p></div>';
+                                          }
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                        <p className="text-gray-500 text-sm">Aucune image</p>
+                                      </div>
+                                    );
+                                  } catch (e) {
+                                    return (
+                                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                        <p className="text-gray-500 text-sm">Aucune image</p>
+                                      </div>
+                                    );
+                                  }
+                                })()}
+                                <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm rounded-lg p-2">
+                                  <div className="text-right">
+                                    <div className="font-bold text-lg text-lokaz-orange">
+                                      {terrain.prix?.toLocaleString()} FCFA
+                                    </div>
+                                    <div className="text-xs text-gray-600">Prix de vente</div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            <div className="p-4">
+                              <div className="flex items-start justify-between mb-3">
+                                <div>
+                                  <h3 className="font-bold text-lg text-lokaz-black flex items-center gap-2">
+                                    {terrain.titre}
+                                    <Badge className="bg-green-600 text-white">{terrain.type_terrain}</Badge>
+                                    {terrain.statut_vente === 'vendu' && <Badge className="bg-red-600 text-white">Vendu</Badge>}
+                                  </h3>
+                                  <p className="text-sm text-gray-600 flex items-center gap-1">
+                                    {terrain.adresse && (
+                                      <a
+                                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(terrain.adresse)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 text-lokaz-orange hover:underline"
+                                      >
+                                        <MapPin className="h-4 w-4" />
+                                        <span>Voir sur maps</span>
+                                      </a>
+                                    )}
+                                  </p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleToggleTerrainStatus(terrain.id, terrain.statut_vente)}
+                                    className={terrain.statut_vente === 'vendu' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-orange-100 text-orange-700 hover:bg-orange-200'}
+                                  >
+                                    {terrain.statut_vente === 'vendu' ? 'Marquer disponible' : 'Marquer vendu'}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedTerrain(terrain);
+                                      setShowTerrainModal(true);
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleDeleteTerrain(terrain.id)}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-gray-600">
+                                <div className="flex items-center gap-1">
+                                  <Ruler className="h-4 w-4" />
+                                  <span>{terrain.superficie_m2} m²</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{terrain.ville}</span>
+                                </div>
+                              </div>
+                              {terrain.quartier && (
+                                <div className="mt-2 text-sm text-gray-600">
+                                  <span className="font-medium">Quartier:</span> {terrain.quartier}
+                                </div>
+                              )}
+                              {terrain.description && (
+                                <div className="mt-2 text-sm text-gray-600">
+                                  <p className="line-clamp-2">{terrain.description}</p>
+                                </div>
+                              )}
                             </div>
                           </CardContent>
                         </Card>
@@ -1338,16 +1533,47 @@ const Dashboard = () => {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {/* Afficher les chambres */}
+                        {chambres && chambres.length > 0 && (
+                          <div className="col-span-full mb-4 mt-8">
+                            <h3 className="text-lg font-semibold mb-2">Chambres ({chambres.length})</h3>
+                          </div>
+                        )}
                       {chambres.map((chambre: any) => (
-                        <Card key={chambre.id} className="hover:shadow-lg transition-shadow group">
+                          <Card key={`chambre-${chambre.id}`} className="hover:shadow-lg transition-shadow group">
                           <CardContent className="p-0">
                             {chambre.photos && (
                               <div className="relative h-48 overflow-hidden rounded-t-lg">
-                                <img
-                                  src={JSON.parse(chambre.photos)[0] || '/placeholder.svg'}
-                                  alt={`Chambre ${chambre.numero_chambre}`}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
+                                {(() => {
+                                  try {
+                                    const photos = JSON.parse(chambre.photos);
+                                    const imageUrl = photos && photos.length > 0 ? photos[0] : null;
+                                    return imageUrl ? (
+                                      <img
+                                        src={imageUrl}
+                                        alt={`Chambre ${chambre.numero_chambre}`}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = 'none';
+                                          const parent = e.currentTarget.parentElement;
+                                          if (parent) {
+                                            parent.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gray-100"><p class="text-gray-500 text-sm">Aucune image</p></div>';
+                                          }
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                        <p className="text-gray-500 text-sm">Aucune image</p>
+                                      </div>
+                                    );
+                                  } catch (e) {
+                                    return (
+                                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                        <p className="text-gray-500 text-sm">Aucune image</p>
+                                      </div>
+                                    );
+                                  }
+                                })()}
                                 {/* Affiche le prix de vente si applicable */}
                                 {(chambre.type_propriete === 'vente' || chambre.type_propriete === 'les_deux') && chambre.prix_vente > 0 ? (
                                   <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm rounded-lg p-2">
@@ -1370,6 +1596,7 @@ const Dashboard = () => {
                                 )}
                               </div>
                             )}
+                              <div className="p-4">
                             <div className="flex items-start justify-between mb-3">
                               <div>
                                 <h3 className="font-bold text-lg text-lokaz-black flex items-center gap-2">
@@ -1395,25 +1622,171 @@ const Dashboard = () => {
                                 </p>
                               </div>
                               <div className="flex gap-2">
-                                <Button size="icon" variant="ghost" className="bg-lokaz-orange hover:bg-lokaz-orange-light text-white" onClick={() => { setSelectedChambre(chambre); setChambreModalOpen(true); }}>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setSelectedChambre(chambre);
+                                        setChambreModalOpen(true);
+                                      }}
+                                    >
                                   <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button size="icon" variant="ghost" onClick={() => handleDeleteChambre(chambre.id)}>
-                                  <Trash2 className="h-4 w-4 text-red-600" />
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleDeleteChambre(chambre.id)}
+                                      className="text-red-600 hover:text-red-700"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
                             </div>
-                            <div className="space-y-2 mb-4">
-                              <p className="text-sm text-gray-600 flex items-center gap-4 mt-2">
-                                <span className="flex items-center gap-1"><Ruler className="h-4 w-4" />{chambre.superficie_m2} m²</span>
-                                <span className="flex items-center gap-1"><Bed className="h-4 w-4" />{chambre.nb_chambres} ch.</span>
-                                <span className="flex items-center gap-1"><Sofa className="h-4 w-4" />{chambre.nb_salons} salon</span>
-                              </p>
-                              {chambre.garage && (
-                                <Badge variant="secondary" className="text-xs">🚗 Garage</Badge>
+                              <div className="flex items-center gap-4 text-sm text-gray-600">
+                                <div className="flex items-center gap-1">
+                                  <Ruler className="h-4 w-4" />
+                                  <span>{chambre.superficie_m2} m²</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Bed className="h-4 w-4" />
+                                  <span>{chambre.nb_chambres} chambre(s)</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Sofa className="h-4 w-4" />
+                                  <span>{chambre.nb_salons} salon(s)</span>
+                                </div>
+                              </div>
+                              {chambre.quartier && (
+                                <div className="mt-2 text-sm text-gray-600">
+                                  <span className="font-medium">Quartier:</span> {chambre.quartier}
+                                </div>
                               )}
-                              {chambre.chap_chap && (
-                                <Badge variant="secondary" className="text-xs bg-lokaz-orange/10 text-lokaz-orange">⚡ Chap-Chap</Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+
+                      {/* Afficher les terrains */}
+                      {terrains && terrains.length > 0 && (
+                        <div className="col-span-full mb-4 mt-8">
+                          <h3 className="text-lg font-semibold mb-2">Terrains à vendre ({terrains.length})</h3>
+                        </div>
+                      )}
+                      {terrains.map((terrain: any) => (
+                        <Card key={`terrain-${terrain.id}`} className="hover:shadow-lg transition-shadow group">
+                          <CardContent className="p-0">
+                            {terrain.photos && (
+                              <div className="relative h-48 overflow-hidden rounded-t-lg">
+                                {(() => {
+                                  try {
+                                    const photos = JSON.parse(terrain.photos);
+                                    const imageUrl = photos && photos.length > 0 ? photos[0] : null;
+                                    return imageUrl ? (
+                                      <img
+                                        src={imageUrl}
+                                        alt={`Terrain ${terrain.titre}`}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = 'none';
+                                          const parent = e.currentTarget.parentElement;
+                                          if (parent) {
+                                            parent.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gray-100"><p class="text-gray-500 text-sm">Aucune image</p></div>';
+                                          }
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                        <p className="text-gray-500 text-sm">Aucune image</p>
+                                      </div>
+                                    );
+                                  } catch (e) {
+                                    return (
+                                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                        <p className="text-gray-500 text-sm">Aucune image</p>
+                                      </div>
+                                    );
+                                  }
+                                })()}
+                                <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm rounded-lg p-2">
+                                  <div className="text-right">
+                                    <div className="font-bold text-lg text-lokaz-orange">
+                                      {terrain.prix?.toLocaleString()} FCFA
+                                    </div>
+                                    <div className="text-xs text-gray-600">Prix de vente</div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            <div className="p-4">
+                              <div className="flex items-start justify-between mb-3">
+                                <div>
+                                  <h3 className="font-bold text-lg text-lokaz-black flex items-center gap-2">
+                                    {terrain.titre}
+                                    <Badge className="bg-green-600 text-white">{terrain.type_terrain}</Badge>
+                                    {terrain.statut_vente === 'vendu' && <Badge className="bg-red-600 text-white">Vendu</Badge>}
+                                  </h3>
+                                  <p className="text-sm text-gray-600 flex items-center gap-1">
+                                    {terrain.adresse && (
+                                      <a
+                                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(terrain.adresse)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 text-lokaz-orange hover:underline"
+                                      >
+                                        <MapPin className="h-4 w-4" />
+                                        <span>Voir sur maps</span>
+                                      </a>
+                                    )}
+                                  </p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleToggleTerrainStatus(terrain.id, terrain.statut_vente)}
+                                    className={terrain.statut_vente === 'vendu' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-orange-100 text-orange-700 hover:bg-orange-200'}
+                                  >
+                                    {terrain.statut_vente === 'vendu' ? 'Marquer disponible' : 'Marquer vendu'}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedTerrain(terrain);
+                                      setShowTerrainModal(true);
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleDeleteTerrain(terrain.id)}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-gray-600">
+                                <div className="flex items-center gap-1">
+                                  <Ruler className="h-4 w-4" />
+                                  <span>{terrain.superficie_m2} m²</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{terrain.ville}</span>
+                                </div>
+                              </div>
+                              {terrain.quartier && (
+                                <div className="mt-2 text-sm text-gray-600">
+                                  <span className="font-medium">Quartier:</span> {terrain.quartier}
+                                </div>
+                              )}
+                              {terrain.description && (
+                                <div className="mt-2 text-sm text-gray-600">
+                                  <p className="line-clamp-2">{terrain.description}</p>
+                                </div>
                               )}
                             </div>
                           </CardContent>
@@ -1449,6 +1822,15 @@ const Dashboard = () => {
         onDelete={handleDeleteProperty}
       />
 
+      <PropertyDetailsModal
+        isOpen={showDetailsModal}
+        onClose={() => {
+          setShowDetailsModal(false)
+          setSelectedProperty(null)
+        }}
+        chambre={selectedProperty}
+      />
+
       <ProfileModal
         isOpen={profileModalOpen}
         onClose={() => setProfileModalOpen(false)}
@@ -1457,10 +1839,17 @@ const Dashboard = () => {
 
       {/* Modal de détail de réservation */}
       <Dialog open={reservationDetailOpen} onOpenChange={setReservationDetailOpen}>
-        <DialogContent
+        <DialogContent 
           className="bg-white p-8 sm:p-12 flex flex-col gap-8 max-h-[90vh] overflow-y-auto max-w-3xl w-full"
           aria-describedby="reservation-detail-description"
         >
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+              <Building2 className="h-7 w-7 text-lokaz-orange" />
+              Détail de la réservation
+            </DialogTitle>
+          </DialogHeader>
+          
           <button
             onClick={() => setReservationDetailOpen(false)}
             className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none"
@@ -1468,123 +1857,130 @@ const Dashboard = () => {
           >
             ×
           </button>
+          
           <span id="reservation-detail-description" className="sr-only">
             Détail de la réservation, informations sur le propriétaire et le locataire.
           </span>
-          {/* Guard: si selectedReservation est null ou selectedReservation.chambre est null, afficher un message d'erreur user-friendly */}
-          {(!selectedReservation || !selectedReservation.chambre) ? (
+          
+          {/* Contenu de la modale */}
+          {(!selectedReservation || !selectedReservation.chambres) ? (
             <div className="text-center text-red-600 font-bold py-12">
               Impossible d'afficher le détail de la réservation : la chambre liée à cette réservation est introuvable ou a été supprimée.
             </div>
           ) : (
-          <>
-          <DialogHeader>
-            <DialogTitle className="text-center text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-              <svg xmlns='http://www.w3.org/2000/svg' className='h-7 w-7 text-lokaz-orange' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M3 12l2-2m0 0l7-7 7 7m-9 2v8m4-8v8m5 0h-2a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2v11a2 2 0 01-2 2z' /></svg>
-              Détail de la réservation
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* Colonne infos générales */}
-            <div className="flex-1 space-y-4">
-              <div className="flex items-center gap-4">
-                {/* Image chambre avec fallback et gestion Supabase/CDN améliorée */}
-                {(() => {
-                  let photo = selectedReservation.chambre?.photos;
-                  let url = null;
-                  const supabaseUrl = "https://xyz.supabase.co/storage/v1/object/public/ton-bucket/"; // Remplace par ton vrai bucket si besoin
-                  try {
-                    let first = '';
-                    if (Array.isArray(photo)) {
-                      first = photo[0];
-                    } else if (typeof photo === 'string') {
-                      if (photo.trim().startsWith('[')) {
-                        // JSON.stringify
-                        const arr = JSON.parse(photo);
-                        first = arr[0];
-                      } else {
-                        const arr = photo.split(',');
-                        first = arr[0] && arr[0].trim() !== '' ? arr[0].trim() : '';
+            // Contenu existant de la modale
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              {/* Colonne infos générales */}
+              <div className="flex-1 space-y-4">
+                <div className="flex items-center gap-4">
+                  {/* Image chambre avec fallback et gestion Supabase/CDN améliorée */}
+                  {(() => {
+                    let photo = selectedReservation.chambres?.photos;
+                    let url = null;
+                    const supabaseUrl = "https://xyz.supabase.co/storage/v1/object/public/ton-bucket/"; // Remplace par ton vrai bucket si besoin
+                    try {
+                      let first = '';
+                      if (Array.isArray(photo)) {
+                        first = photo[0];
+                      } else if (typeof photo === 'string') {
+                        if (photo.trim().startsWith('[')) {
+                          // JSON.stringify
+                          const arr = JSON.parse(photo);
+                          first = arr[0];
+                        } else {
+                          const arr = photo.split(',');
+                          first = arr[0] && arr[0].trim() !== '' ? arr[0].trim() : '';
+                        }
                       }
+                      if (first && first.startsWith('http')) {
+                        url = first;
+                      } else if (first) {
+                        url = supabaseUrl + first;
+                      }
+                    } catch (e) {
+                      console.log('Erreur parsing photo:', e);
                     }
-                    if (first && first.startsWith('http')) {
-                      url = first;
-                    } else if (first) {
-                      url = supabaseUrl + first;
+                    if (url) {
+                      return <img src={url} alt="Photo chambre" className="w-32 h-32 object-cover rounded-lg border bg-gray-100" />;
                     }
-                  } catch (e) {
-                    console.log('Erreur parsing photo:', e);
-                  }
-                  if (url) {
-                    return <img src={url} alt="Photo chambre" className="w-32 h-32 object-cover rounded-lg border bg-gray-100" />;
-                  }
-                  // Fallback SVG
-                  return (
-                    <div className="w-32 h-32 flex items-center justify-center rounded-lg border bg-gray-100">
-                      <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="text-gray-300">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2zm0 0l7 7 4-4 5 5" />
-                      </svg>
+                    // Fallback SVG
+                    return (
+                      <div className="w-32 h-32 flex items-center justify-center rounded-lg border bg-gray-100">
+                        <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="text-gray-300">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                        </svg>
+                      </div>
+                    );
+                  })()}
+                  <div>
+                    <div className="font-bold text-lg flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-lokaz-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 17l4 4 4-4m0 0V3m0 18H4a2 2 0 01-2-2V7a2 2 0 012-2h16a2 2 0 012 2v11a2 2 0 01-2 2z" /></svg>
+                      Chambre {selectedReservation.chambres?.numero_chambre || <span className="text-gray-400">Non renseigné</span>}
                     </div>
-                  );
-                })()}
-                <div>
-                  <div className="font-bold text-lg flex items-center gap-2">
-                    <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5 text-lokaz-orange' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 17l4 4 4-4m0 0V3m0 18H4a2 2 0 01-2-2V7a2 2 0 012-2h16a2 2 0 012 2v11a2 2 0 01-2 2z' /></svg>
-                    Chambre {selectedReservation.chambre?.numero_chambre || <span className="text-gray-400">Non renseigné</span>}
-                  </div>
-                  <div className="text-gray-500 flex items-center gap-2">
-                    <svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M3 7v4a1 1 0 001 1h3m10 0h3a1 1 0 001-1V7m-1 4V7a2 2 0 00-2-2H5a2 2 0 00-2 2v4m16 0V7a2 2 0 00-2-2H5a2 2 0 00-2 2v4' /></svg>
-                    Propriété : {selectedReservation.chambre?.maison?.titre || <span className="text-gray-400">Non renseigné</span>}
-                  </div>
-                  <div className="text-gray-500 flex items-center gap-2">
-                    <svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M17.657 16.657L13.414 12.414a8 8 0 111.414-1.414l4.243 4.243a1 1 0 01-1.414 1.414z' /></svg>
-                    Ville : {selectedReservation.chambre?.maison?.ville || selectedReservation.chambre?.ville || <span className="text-gray-400">Non renseigné</span>}
+                    <div className="text-gray-500 flex items-center gap-2">
+                      <svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M3 7v4a1 1 0 001 1h3m10 0h3a1 1 0 001-1V7m-1 4V7a2 2 0 00-2-2H5a2 2 0 00-2 2v4' /></svg>
+                      {selectedReservation.chambres?.adresse ? (
+                        <a
+                          href={selectedReservation.chambres.adresse}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-lokaz-orange hover:underline"
+                        >
+                          Voir la propriété sur maps
+                        </a>
+                      ) : (
+                        <span className="text-gray-400">Non renseigné</span>
+                      )}
+                    </div>
+                    <div className="text-gray-500 flex items-center gap-2">
+                      <svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M17.657 16.657L13.414 12.414a8 8 0 111.414-1.414l4.243 4.243a1 1 0 01-1.414 1.414z' /></svg>
+                      Ville : {selectedReservation.chambres?.ville || <span className="text-gray-400">Non renseigné</span>}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="font-semibold">Superficie :</div>
-                <div>{selectedReservation.chambre?.superficie_m2 !== undefined && selectedReservation.chambre?.superficie_m2 !== null && selectedReservation.chambre?.superficie_m2 !== '' ? `${selectedReservation.chambre.superficie_m2} m²` : <span className="text-gray-400">Non renseigné</span>}</div>
-                <div className="font-semibold">Nombre de chambres :</div>
-                <div>{selectedReservation.chambre?.nb_chambres !== undefined && selectedReservation.chambre?.nb_chambres !== null && selectedReservation.chambre?.nb_chambres !== '' ? selectedReservation.chambre.nb_chambres : <span className="text-gray-400">Non renseigné</span>}</div>
-                <div className="font-semibold">Nombre de salons :</div>
-                <div>{selectedReservation.chambre?.nb_salons !== undefined && selectedReservation.chambre?.nb_salons !== null && selectedReservation.chambre?.nb_salons !== '' ? selectedReservation.chambre.nb_salons : <span className="text-gray-400">Non renseigné</span>}</div>
-                <div className="font-semibold">Prix :</div>
-                <div>{selectedReservation.chambre?.prix !== undefined && selectedReservation.chambre?.prix !== null && selectedReservation.chambre?.prix !== '' ? `${selectedReservation.chambre.prix} FCFA` : <span className="text-gray-400">Non renseigné</span>}</div>
-                <div className="font-semibold">Description :</div>
-                <div>{selectedReservation.chambre?.description ? selectedReservation.chambre.description : <span className="text-gray-400">Non renseigné</span>}</div>
-                <div className="font-semibold">Adresse :</div>
-                <div className="col-span-2 flex items-center">
-                  <span className="font-semibold mr-2">Adresse :</span>
-                  {selectedReservation.chambre?.adresse ? (
-                    <a
-                      href={selectedReservation.chambre.adresse}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-lokaz-orange hover:underline"
-                    >
-                      Voir sur maps
-                    </a>
-                  ) : (
-                    <span className="text-gray-400">Non renseigné</span>
-                  )}
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="font-semibold">Superficie :</div>
+                  <div>{selectedReservation.chambres?.superficie_m2 !== undefined && selectedReservation.chambres?.superficie_m2 !== null && selectedReservation.chambres?.superficie_m2 !== '' ? `${selectedReservation.chambres.superficie_m2} m²` : <span className="text-gray-400">Non renseigné</span>}</div>
+                  <div className="font-semibold">Nombre de chambres :</div>
+                  <div>{selectedReservation.chambres?.nb_chambres !== undefined && selectedReservation.chambres?.nb_chambres !== null && selectedReservation.chambres?.nb_chambres !== '' ? selectedReservation.chambres.nb_chambres : <span className="text-gray-400">Non renseigné</span>}</div>
+                  <div className="font-semibold">Nombre de salons :</div>
+                  <div>{selectedReservation.chambres?.nb_salons !== undefined && selectedReservation.chambres?.nb_salons !== null && selectedReservation.chambres?.nb_salons !== '' ? selectedReservation.chambres.nb_salons : <span className="text-gray-400">Non renseigné</span>}</div>
+                  <div className="font-semibold">Prix :</div>
+                  <div>{selectedReservation.chambres?.prix !== undefined && selectedReservation.chambres?.prix !== null && selectedReservation.chambres?.prix !== '' ? `${selectedReservation.chambres.prix} FCFA` : <span className="text-gray-400">Non renseigné</span>}</div>
+                  <div className="font-semibold">Description :</div>
+                  <div>{selectedReservation.chambres?.description ? selectedReservation.chambres.description : <span className="text-gray-400">Non renseigné</span>}</div>
+                  <div className="font-semibold">Adresse :</div>
+                  <div className="col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
+                    <span className="font-semibold">Adresse :</span>
+                    {selectedReservation.chambres?.adresse ? (
+                      <a
+                        href={selectedReservation.chambres.adresse}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-lokaz-orange hover:underline break-all text-sm"
+                      >
+                        Voir sur maps
+                      </a>
+                    ) : (
+                      <span className="text-gray-400">Non renseigné</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <div>
-                  <div className="font-semibold flex items-center gap-1"><svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 7V3m8 4V3m-9 4h10a2 2 0 012 2v11a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z' /></svg>Date de début :</div>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <div className="font-semibold flex items-center gap-1"><svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 7V3m8 4V3m-9 8h10a2 2 0 012 2v11a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z' /></svg>Date de début :</div>
                   <div>{selectedReservation.date_debut ? new Date(selectedReservation.date_debut).toLocaleString() : <span className="text-gray-400">Non renseignée</span>}</div>
                 </div>
                 <div>
-                  <div className="font-semibold flex items-center gap-1"><svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 7V3m8 4V3m-9 4h10a2 2 0 012 2v11a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z' /></svg>Date de fin :</div>
+                  <div className="font-semibold flex items-center gap-1"><svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 7V3m8 4V3m-9 8h10a2 2 0 012 2v11a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z' /></svg>Date de fin :</div>
                   <div>{selectedReservation.date_fin ? new Date(selectedReservation.date_fin).toLocaleString() : <span className="text-gray-400">Non renseignée</span>}</div>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-4 mt-2 items-center">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-2">
                 <div><span className="font-semibold">Mode de location :</span> {selectedReservation.mode_location || <span className="text-gray-400">Non renseigné</span>}</div>
                 <div><span className="font-semibold">Durée :</span> {selectedReservation.duree ? `${selectedReservation.duree} ${selectedReservation.mode_location === 'jour' ? 'jour(s)' : 'heure(s)'}` : <span className="text-gray-400">Non renseignée</span>}</div>
               </div>
-              <div className="flex flex-wrap gap-4 mt-2 items-center">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-2">
                 <div><span className="font-semibold">Montant total :</span> <span className="text-green-700 font-bold">{selectedReservation.total_a_payer !== undefined && selectedReservation.total_a_payer !== null && selectedReservation.total_a_payer !== '' ? `${selectedReservation.total_a_payer} FCFA` : <span className="text-gray-400">Non renseigné</span>}</span></div>
                 <div>
                   <span className="font-semibold">Durée :</span> {
@@ -1613,42 +2009,42 @@ const Dashboard = () => {
             {/* Colonne contacts */}
             <div className="flex flex-col gap-4 min-w-[220px] w-full md:w-auto">
               {/* Propriétaire */}
-              {selectedReservation.chambre?.maison?.proprietaire && (
+              {selectedReservation.chambres?.proprietaire && (
                 <div className="rounded-lg border p-4 bg-gray-50">
                   <div className="font-bold text-orange-600 flex items-center gap-2 mb-1">
                     <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z' /></svg>
                     Propriétaire
                   </div>
-                  <div>{selectedReservation.chambre.maison.proprietaire.prenom} {selectedReservation.chambre.maison.proprietaire.nom}</div>
-                  <div className="text-gray-500 flex items-center gap-1"><svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M3 7v4a1 1 0 001 1h3m10 0h3a1 1 0 001-1V7m-1 4V7a2 2 0 00-2-2H5a2 2 0 00-2 2v4m16 0V7a2 2 0 00-2-2H5a2 2 0 00-2 2v4' /></svg>{selectedReservation.chambre.maison.proprietaire.telephone}</div>
+                  <div>{selectedReservation.chambres.proprietaire.prenom} {selectedReservation.chambres.proprietaire.nom}</div>
+                  <div className="text-gray-500 flex items-center gap-1"><svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M3 7v4a1 1 0 001 1h3m10 0h3a1 1 0 001-1V7m-1 4V7a2 2 0 00-2-2H5a2 2 0 00-2 2v4' /></svg>{selectedReservation.chambres.proprietaire.telephone}</div>
                   <div className="flex gap-2 mt-2">
-                    <a href={`tel:${selectedReservation.chambre.maison.proprietaire.telephone}`} className="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700" target="_blank" rel="noopener noreferrer">
+                    <a href={`tel:${selectedReservation.chambres.proprietaire.telephone}`} className="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700" target="_blank" rel="noopener noreferrer">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.25 6.75c0-1.243 1.007-2.25 2.25-2.25h2.086c.966 0 1.81.684 2.02 1.63l.379 1.642a2.25 2.25 0 01-.516 2.09l-.7.7a16.001 16.001 0 006.586 6.586l.7-.7a2.25 2.25 0 012.09-.516l1.642.379c.946.21 1.63 1.054 1.63 2.02v2.086c0 1.243-1.007 2.25-2.25 2.25h-.75C9.022 21 3 14.978 3 7.5v-.75z" /></svg>
                       Contacter
                     </a>
-                    <a href={`https://wa.me/${selectedReservation.chambre.maison.proprietaire.telephone}`} className="inline-flex items-center px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600" target="_blank" rel="noopener noreferrer">
-                      <svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4 mr-1' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path d='M16.403 12.803c-.278-.139-1.646-.812-1.9-.904-.254-.093-.439-.139-.625.14-.186.278-.719.904-.881 1.09-.163.186-.325.209-.603.07-.278-.14-1.175-.433-2.24-1.38-.828-.738-1.387-1.65-1.55-1.927-.163-.278-.017-.428.123-.567.127-.126.278-.326.417-.488.14-.163.186-.279.278-.465.093-.186.047-.349-.023-.488-.07-.14-.625-1.51-.857-2.07-.226-.545-.456-.471-.625-.48-.163-.007-.349-.009-.535-.009-.186 0-.488.07-.744.326-.256.256-.977.954-.977 2.32 0 1.366.999 2.687 1.137 2.874.14.186 2.01 3.07 4.87 4.183.681.294 1.21.47 1.624.601.682.217 1.303.187 1.793.113.547-.082 1.646-.672 1.88-1.322.233-.65.233-1.207.163-1.322-.07-.116-.256-.186-.534-.325z' /></svg>
+                    <a href={`https://wa.me/${selectedReservation.chambres.proprietaire.telephone}`} className="inline-flex items-center px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600" target="_blank" rel="noopener noreferrer">
+                        <MessageCircle className="h-4 w-4 mr-1" />
                       WhatsApp
                     </a>
                   </div>
                 </div>
               )}
               {/* Locataire */}
-              {selectedReservation.locataire && (
+              {selectedReservation.utilisateurs && (
                 <div className="rounded-lg border p-4 bg-gray-50">
                   <div className="font-bold text-blue-600 flex items-center gap-2 mb-1">
                     <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z' /></svg>
                     Locataire
                   </div>
-                  <div>{selectedReservation.locataire.prenom} {selectedReservation.locataire.nom}</div>
-                  <div className="text-gray-500 flex items-center gap-1"><svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M3 7v4a1 1 0 001 1h3m10 0h3a1 1 0 001-1V7m-1 4V7a2 2 0 00-2-2H5a2 2 0 00-2 2v4m16 0V7a2 2 0 00-2-2H5a2 2 0 00-2 2v4' /></svg>{selectedReservation.locataire.telephone}</div>
+                  <div>{selectedReservation.utilisateurs.prenom} {selectedReservation.utilisateurs.nom}</div>
+                  <div className="text-gray-500 flex items-center gap-1"><svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M3 7v4a1 1 0 001 1h3m10 0h3a1 1 0 001-1V7m-1 4V7a2 2 0 00-2-2H5a2 2 0 00-2 2v4' /></svg>{selectedReservation.utilisateurs.telephone}</div>
                   <div className="flex gap-2 mt-2">
-                    <a href={`tel:${selectedReservation.locataire.telephone}`} className="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700" target="_blank" rel="noopener noreferrer">
+                    <a href={`tel:${selectedReservation.utilisateurs.telephone}`} className="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700" target="_blank" rel="noopener noreferrer">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.25 6.75c0-1.243 1.007-2.25 2.25-2.25h2.086c.966 0 1.81.684 2.02 1.63l.379 1.642a2.25 2.25 0 01-.516 2.09l-.7.7a16.001 16.001 0 006.586 6.586l.7-.7a2.25 2.25 0 012.09-.516l1.642.379c.946.21 1.63 1.054 1.63 2.02v2.086c0 1.243-1.007 2.25-2.25 2.25h-.75C9.022 21 3 14.978 3 7.5v-.75z" /></svg>
                       Contacter
                     </a>
-                    <a href={`https://wa.me/${selectedReservation.locataire.telephone}`} className="inline-flex items-center px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600" target="_blank" rel="noopener noreferrer">
-                      <svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4 mr-1' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path d='M16.403 12.803c-.278-.139-1.646-.812-1.9-.904-.254-.093-.439-.139-.625.14-.186.278-.719.904-.881 1.09-.163.186-.325.209-.603.07-.278-.14-1.175-.433-2.24-1.38-.828-.738-1.387-1.65-1.55-1.927-.163-.278-.017-.428.123-.567.127-.126.278-.326.417-.488.14-.163.186-.279.278-.465.093-.186.047-.349-.023-.488-.07-.14-.625-1.51-.857-2.07-.226-.545-.456-.471-.625-.48-.163-.007-.349-.009-.535-.009-.186 0-.488.07-.744.326-.256.256-.977.954-.977 2.32 0 1.366.999 2.687 1.137 2.874.14.186 2.01 3.07 4.87 4.183.681.294 1.21.47 1.624.601.682.217 1.303.187 1.793.113.547-.082 1.646-.672 1.88-1.322.233-.65.233-1.207.163-1.322-.07-.116-.256-.186-.534-.325z' /></svg>
+                    <a href={`https://wa.me/${selectedReservation.utilisateurs.telephone}`} className="inline-flex items-center px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600" target="_blank" rel="noopener noreferrer">
+                        <MessageCircle className="h-4 w-4 mr-1" />
                       WhatsApp
                     </a>
                   </div>
@@ -1656,7 +2052,6 @@ const Dashboard = () => {
               )}
             </div>
           </div>
-          </>
           )}
         </DialogContent>
       </Dialog>
@@ -1726,7 +2121,21 @@ const Dashboard = () => {
           </>
         )}
       </div>
+
+        {/* TerrainModal */}
+        {showTerrainModal && (
+          <TerrainModal
+            isOpen={showTerrainModal}
+            onClose={() => {
+              setShowTerrainModal(false);
+              setSelectedTerrain(null);
+              fetchDashboardData(); // Rafraîchir les données
+            }}
+            terrain={selectedTerrain}
+          />
+        )}
     </div>
+    </>
   )
 }
 

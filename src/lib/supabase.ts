@@ -32,6 +32,7 @@ export interface Maison {
   description: string
   adresse: string
   ville: string
+  quartier?: string
   type_location: 'mois' | 'jour' | 'heure'
   prix_par_heure?: number
   prix_par_jour?: number
@@ -64,6 +65,7 @@ export interface Chambre {
   photos?: string
   adresse: string
   ville: string
+  quartier?: string
   prix_heure: number
   prix_jour: number
   maisons?: Maison

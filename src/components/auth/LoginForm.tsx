@@ -93,7 +93,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, defaultUserType }) => 
           Connexion
         </CardTitle>
         <CardDescription>
-          Connectez-vous à votre compte Lokaz
+          Connectez-vous à votre compte NBBC Immo
         </CardDescription>
       </CardHeader>
       <CardContent>

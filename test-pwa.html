@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PWA - NBBC Immo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+        button {
+            background-color: #e49a33;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #d18b2a;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .criteria-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .criteria-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 3px;
+        }
+        .check-mark {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .x-mark {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test PWA - NBBC Immo</h1>
+        <p>Cette page teste les fonctionnalités PWA de l'application NBBC Immo.</p>
+
+        <div id="status"></div>
+
+        <h2>Actions de test</h2>
+        <button onclick="testManifest()">📋 Tester Manifest</button>
+        <button onclick="testServiceWorker()">⚙️ Tester Service Worker</button>
+        <button onclick="testInstallation()">📱 Tester Installation</button>
+        <button onclick="testOffline()">📶 Tester Mode Hors-ligne</button>
+        <button onclick="clearCache()">🗑️ Vider Cache</button>
+        <button onclick="runAllTests()">🚀 Tous les Tests</button>
+
+        <h2>Critères PWA</h2>
+        <div id="criteria" class="criteria-grid"></div>
+
+        <h2>Journal des tests</h2>
+        <button onclick="clearLog()">Effacer Journal</button>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        let deferredPrompt = null;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+
+            if (type === 'error') {
+                logEntry.style.color = '#dc3545';
+            } else if (type === 'success') {
+                logEntry.style.color = '#28a745';
+            } else if (type === 'warning') {
+                logEntry.style.color = '#ffc107';
+            }
+
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        async function testManifest() {
+            log('🔍 Test du manifest en cours...');
+
+            try {
+                const manifestLink = document.querySelector('link[rel="manifest"]');
+                if (!manifestLink) {
+                    log('❌ Aucun lien vers le manifest trouvé', 'error');
+                    showStatus('Manifest non trouvé', 'error');
+                    return false;
+                }
+
+                const response = await fetch(manifestLink.href);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const manifest = await response.json();
+                log('✅ Manifest chargé avec succès', 'success');
+                log(`📝 Nom: ${manifest.name || manifest.short_name}`);
+                log(`🎯 Start URL: ${manifest.start_url}`);
+                log(`🎨 Theme Color: ${manifest.theme_color}`);
+                log(`📱 Display: ${manifest.display}`);
+                log(`🖼️ Icônes: ${manifest.icons ? manifest.icons.length : 0}`);
+
+                showStatus('Manifest OK', 'success');
+                return true;
+
+            } catch (error) {
+                log(`❌ Erreur manifest: ${error.message}`, 'error');
+                showStatus('Erreur Manifest', 'error');
+                return false;
+            }
+        }
+
+        async function testServiceWorker() {
+            log('🔍 Test du Service Worker en cours...');
+
+            if (!('serviceWorker' in navigator)) {
+                log('❌ Service Worker non supporté', 'error');
+                showStatus('Service Worker non supporté', 'error');
+                return false;
+            }
+
+            try {
+                const registration = await navigator.serviceWorker.getRegistration();
+
+                if (registration) {
+                    log('✅ Service Worker enregistré', 'success');
+                    log(`📍 Scope: ${registration.scope}`);
+                    log(`🔄 État: ${registration.active ? 'Actif' : 'Inactif'}`);
+
+                    if (registration.waiting) {
+                        log('⏳ Mise à jour en attente');
+                    }
+
+                    showStatus('Service Worker OK', 'success');
+                    return true;
+                } else {
+                    log('❌ Service Worker non enregistré', 'error');
+                    showStatus('Service Worker non enregistré', 'error');
+                    return false;
+                }
+
+            } catch (error) {
+                log(`❌ Erreur Service Worker: ${error.message}`, 'error');
+                showStatus('Erreur Service Worker', 'error');
+                return false;
+            }
+        }
+
+        function testInstallation() {
+            log('🔍 Test d\'installation en cours...');
+
+            // Vérifier si déjà installé
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+            const isIOSStandalone = window.navigator.standalone === true;
+
+            if (isStandalone || isIOSStandalone) {
+                log('✅ Application déjà installée', 'success');
+                showStatus('Application installée', 'success');
+                return true;
+            }
+
+            if (deferredPrompt) {
+                log('🚀 Déclenchement de l\'installation...');
+
+                deferredPrompt.prompt();
+
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        log('✅ Installation acceptée', 'success');
+                        showStatus('Installation en cours', 'success');
+                    } else {
+                        log('❌ Installation refusée', 'warning');
+                        showStatus('Installation refusée', 'warning');
+                    }
+                    deferredPrompt = null;
+                });
+
+                return true;
+            } else {
+                log('❌ Prompt d\'installation non disponible', 'error');
+                log('💡 Vérifiez que tous les critères PWA sont remplis');
+                showStatus('Installation non disponible', 'error');
+                return false;
+            }
+        }
+
+        async function testOffline() {
+            log('🔍 Test du mode hors-ligne en cours...');
+
+            try {
+                const testUrl = window.location.origin + '/';
+                const response = await fetch(testUrl, { cache: 'force-cache' });
+
+                if (response.ok) {
+                    log('✅ Contenu disponible en cache', 'success');
+                    showStatus('Mode hors-ligne OK', 'success');
+                    return true;
+                } else {
+                    log('❌ Contenu non disponible en cache', 'error');
+                    showStatus('Mode hors-ligne KO', 'error');
+                    return false;
+                }
+
+            } catch (error) {
+                log(`❌ Erreur test hors-ligne: ${error.message}`, 'error');
+                showStatus('Erreur mode hors-ligne', 'error');
+                return false;
+            }
+        }
+
+        async function clearCache() {
+            log('🗑️ Suppression du cache en cours...');
+
+            try {
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(
+                        cacheNames.map(cacheName => caches.delete(cacheName))
+                    );
+                    log('✅ Cache supprimé', 'success');
+                }
+
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        await registration.unregister();
+                        log('✅ Service Worker désenregistré', 'success');
+                    }
+                }
+
+                showStatus('Cache nettoyé', 'success');
+                log('🔄 Rechargement de la page recommandé');
+
+            } catch (error) {
+                log(`❌ Erreur suppression cache: ${error.message}`, 'error');
+                showStatus('Erreur nettoyage', 'error');
+            }
+        }
+
+        async function checkCriteria() {
+            const criteria = {
+                'HTTPS/Localhost': location.protocol === 'https:' || location.hostname === 'localhost',
+                'Manifest': !!document.querySelector('link[rel="manifest"]'),
+                'Service Worker': 'serviceWorker' in navigator,
+                'Installé': window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true,
+                'BeforeInstallPrompt': !!deferredPrompt
+            };
+
+            const criteriaDiv = document.getElementById('criteria');
+            criteriaDiv.innerHTML = '';
+
+            Object.entries(criteria).forEach(([name, passed]) => {
+                const div = document.createElement('div');
+                div.className = 'criteria-item';
+                div.innerHTML = `
+                    <span>${name}</span>
+                    <span class="${passed ? 'check-mark' : 'x-mark'}">${passed ? '✅' : '❌'}</span>
+                `;
+                criteriaDiv.appendChild(div);
+            });
+
+            const passedCount = Object.values(criteria).filter(Boolean).length;
+            const totalCount = Object.keys(criteria).length;
+
+            log(`📊 Critères PWA: ${passedCount}/${totalCount} validés`);
+
+            return { passed: passedCount, total: totalCount, criteria };
+        }
+
+        async function runAllTests() {
+            log('🚀 Démarrage de tous les tests...');
+
+            const results = {
+                manifest: await testManifest(),
+                serviceWorker: await testServiceWorker(),
+                offline: await testOffline()
+            };
+
+            const criteriaResult = await checkCriteria();
+
+            const passedTests = Object.values(results).filter(Boolean).length;
+            const totalTests = Object.keys(results).length;
+
+            log(`📈 Résultats: ${passedTests}/${totalTests} tests réussis`);
+            log(`📊 Critères: ${criteriaResult.passed}/${criteriaResult.total} validés`);
+
+            if (passedTests === totalTests && criteriaResult.passed >= 4) {
+                log('🎉 PWA prête à l\'installation !', 'success');
+                showStatus('PWA prête !', 'success');
+            } else {
+                log('⚠️ Quelques améliorations nécessaires', 'warning');
+                showStatus('PWA partiellement prête', 'warning');
+            }
+        }
+
+        // Écouter l'événement beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            log('📱 Prompt d\'installation disponible', 'success');
+        });
+
+        window.addEventListener('appinstalled', () => {
+            log('🎉 Application installée avec succès !', 'success');
+            deferredPrompt = null;
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🏁 Test PWA NBBC Immo initialisé');
+            checkCriteria();
+        });
+    </script>
+</body>
+</html>

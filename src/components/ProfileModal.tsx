@@ -127,14 +127,22 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        aria-describedby="profile-modal-description"
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5 text-lokaz-orange" />
             Mon Profil
           </DialogTitle>
         </DialogHeader>
-
+        
+        {/* Description pour l'accessibilité */}
+        <div id="profile-modal-description" className="sr-only">
+          Formulaire de modification du profil utilisateur
+        </div>
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">

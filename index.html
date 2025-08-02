@@ -1,19 +1,208 @@
-
 <!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#ff9900" />
-    <link rel="icon" type="image/png" href="/AppImages/android/android-launchericon-192-192.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lokaz - Gestion locative immobilière connectée</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/AppImages/favicon.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <!-- SEO Meta Tags -->
+        <title>
+            NBBC Immo - Plateforme Immobilière #1 au Togo | Location, Vente &
+            Chap-Chap
+        </title>
+        <meta
+            name="description"
+            content="🏠 NBBC Immo : La plateforme immobilière connectée du Togo. Location mensuelle, journalière ou à l'heure (Chap-Chap). +500 logements à Lomé. Service 24/7. Réservation instantanée."
+        />
+        <meta
+            name="keywords"
+            content="NBBC Immo, immobilier Togo, location Lomé, appartement Togo, maison location, Chap-Chap, location journalière, propriétaire Togo, locataire Lomé, plateforme immobilière"
+        />
+        <meta name="author" content="NBBC Immo" />
+        <meta
+            name="robots"
+            content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+        />
+        <meta name="language" content="fr" />
+        <meta name="geo.region" content="TG" />
+        <meta name="geo.placename" content="Lomé, Togo" />
+        <meta name="geo.position" content="6.1319;1.2228" />
+        <meta name="ICBM" content="6.1319, 1.2228" />
+        <link rel="canonical" href="https://nbbcimmo.com/" />
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://nbbcimmo.com/" />
+        <meta
+            property="og:title"
+            content="NBBC Immo - Plateforme Immobilière #1 au Togo"
+        />
+        <meta
+            property="og:description"
+            content="🏠 La plateforme immobilière connectée du Togo. +500 logements disponibles, location mensuelle, journalière ou Chap-Chap (à l'heure). Réservation instantanée 24/7."
+        />
+        <meta
+            property="og:image"
+            content="https://nbbcimmo.com/AppImages/og-image.jpg"
+        />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta
+            property="og:image:alt"
+            content="NBBC Immo - Plateforme Immobilière au Togo"
+        />
+        <meta property="og:site_name" content="NBBC Immo" />
+        <meta property="og:locale" content="fr_FR" />
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://nbbcimmo.com/" />
+        <meta
+            property="twitter:title"
+            content="NBBC Immo - Plateforme Immobilière #1 au Togo"
+        />
+        <meta
+            property="twitter:description"
+            content="🏠 La plateforme immobilière connectée du Togo. +500 logements, location mensuelle, journalière ou Chap-Chap. Service 24/7."
+        />
+        <meta
+            property="twitter:image"
+            content="https://nbbcimmo.com/AppImages/og-image.jpg"
+        />
+        <meta
+            property="twitter:image:alt"
+            content="NBBC Immo - Plateforme Immobilière au Togo"
+        />
+        <meta name="twitter:creator" content="@NBBCImmo" />
+
+        <!-- Apple Touch Icon -->
+        <link rel="apple-touch-icon" href="/AppImages/favicon.png" />
+
+        <!-- PWA Manifest -->
+        <link rel="manifest" href="/manifest.json" />
+
+        <!-- Preconnect for fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+        <!-- Schema.org structured data -->
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "RealEstateAgent",
+                "@id": "https://nbbcimmo.com/#organization",
+                "name": "NBBC Immo",
+                "alternateName": "NBBC",
+                "description": "La première plateforme immobilière connectée du Togo. Location mensuelle, journalière et service Chap-Chap (à l'heure). Plus de 500 logements disponibles.",
+                "url": "https://nbbcimmo.com",
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://nbbcimmo.com/AppImages/logo.png",
+                    "width": 300,
+                    "height": 100
+                },
+                "image": {
+                    "@type": "ImageObject",
+                    "url": "https://nbbcimmo.com/AppImages/og-image.jpg",
+                    "width": 1200,
+                    "height": 630
+                },
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressCountry": "TG",
+                    "addressLocality": "Lomé",
+                    "addressRegion": "Maritime"
+                },
+                "geo": {
+                    "@type": "GeoCoordinates",
+                    "latitude": "6.1319",
+                    "longitude": "1.2228"
+                },
+                "contactPoint": [
+                    {
+                        "@type": "ContactPoint",
+                        "telephone": "+228-96-20-04-88",
+                        "contactType": "customer service",
+                        "email": "immonbbc@gmail.com",
+                        "availableLanguage": ["French"],
+                        "hoursAvailable": {
+                            "@type": "OpeningHoursSpecification",
+                            "dayOfWeek": [
+                                "Monday",
+                                "Tuesday",
+                                "Wednesday",
+                                "Thursday",
+                                "Friday",
+                                "Saturday",
+                                "Sunday"
+                            ],
+                            "opens": "00:00",
+                            "closes": "23:59"
+                        }
+                    }
+                ],
+                "areaServed": [
+                    {
+                        "@type": "Country",
+                        "name": "Togo"
+                    },
+                    {
+                        "@type": "City",
+                        "name": "Lomé"
+                    }
+                ],
+                "serviceType": [
+                    "Location immobilière",
+                    "Vente immobilière",
+                    "Gestion locative",
+                    "Location journalière",
+                    "Service Chap-Chap"
+                ],
+                "priceRange": "$$",
+                "hasOfferCatalog": {
+                    "@type": "OfferCatalog",
+                    "name": "Services Immobiliers NBBC",
+                    "itemListElement": [
+                        {
+                            "@type": "Offer",
+                            "itemOffered": {
+                                "@type": "Service",
+                                "name": "Location mensuelle",
+                                "description": "Location de logements à long terme"
+                            }
+                        },
+                        {
+                            "@type": "Offer",
+                            "itemOffered": {
+                                "@type": "Service",
+                                "name": "Location journalière",
+                                "description": "Location de logements à court terme"
+                            }
+                        },
+                        {
+                            "@type": "Offer",
+                            "itemOffered": {
+                                "@type": "Service",
+                                "name": "Service Chap-Chap",
+                                "description": "Location à l'heure pour des besoins ponctuels"
+                            }
+                        }
+                    ]
+                },
+                "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "ratingValue": "4.8",
+                    "reviewCount": "127",
+                    "bestRating": "5",
+                    "worstRating": "1"
+                },
+                "foundingDate": "2024",
+                "slogan": "La plateforme immobilière connectée du Togo"
+            }
+        </script>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script type="module" src="/src/main.tsx"></script>
+    </body>
 </html>

@@ -1,26 +1,161 @@
 {
-  "name": "Lokaz",
-  "short_name": "Lokaz",
-  "start_url": ".",
+  "name": "NBBC Immo - Plateforme Immobilière du Togo",
+  "short_name": "NBBC Immo",
+  "description": "La première plateforme immobilière connectée du Togo. Location mensuelle, journalière et service Chap-Chap (à l'heure). Plus de 500 logements disponibles.",
+  "start_url": "/?utm_source=pwa",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#ff9900",
-  "description": "Location de chambres et maisons",
+  "theme_color": "#e49a33",
+  "orientation": "any",
+  "scope": "/",
+  "lang": "fr",
+  "dir": "ltr",
+  "categories": ["business", "lifestyle", "utilities"],
   "icons": [
     {
-      "src": "/AppImages/android/android-launchericon-144-144.png",
+      "src": "/AppImages/favicon.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/AppImages/favicon.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/AppImages/favicon.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/AppImages/favicon.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/AppImages/favicon.png",
       "sizes": "144x144",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/AppImages/android/android-launchericon-192-192.png",
+      "src": "/AppImages/favicon.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/AppImages/favicon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "/AppImages/android/android-launchericon-512-512.png",
+      "src": "/AppImages/favicon.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/AppImages/favicon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
-} 
+  ],
+  "screenshots": [
+    {
+      "src": "/AppImages/screenshot-desktop-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Page d'accueil NBBC Immo sur desktop"
+    },
+    {
+      "src": "/AppImages/screenshot-mobile-1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Recherche de logements sur mobile"
+    },
+    {
+      "src": "/AppImages/screenshot-mobile-2.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Service Chap-Chap sur mobile"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Rechercher un logement",
+      "short_name": "Recherche",
+      "description": "Trouver rapidement un logement",
+      "url": "/search",
+      "icons": [
+        {
+          "src": "/AppImages/shortcut-search.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Chap-Chap",
+      "short_name": "Chap-Chap",
+      "description": "Location à l'heure",
+      "url": "/chap-chap",
+      "icons": [
+        {
+          "src": "/AppImages/shortcut-chapchap.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Mon Dashboard",
+      "short_name": "Dashboard",
+      "description": "Gérer mes biens",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/AppImages/shortcut-dashboard.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+nbbcimmo",
+      "url": "/?action=%s"
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "images",
+          "accept": ["image/*"]
+        }
+      ]
+    }
+  }
+}

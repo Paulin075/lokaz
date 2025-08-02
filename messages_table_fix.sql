@@ -85,3 +85,43 @@ JOIN public.utilisateurs e ON m.expediteur_id = e.id
 JOIN public.utilisateurs d ON m.destinataire_id = d.id
 ORDER BY m.date_envoi DESC
 LIMIT 10; 
+
+-- Ajout des colonnes quartier aux tables existantes
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'maisons' AND column_name = 'quartier') THEN
+    ALTER TABLE public.maisons ADD COLUMN quartier character varying;
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'chambres' AND column_name = 'quartier') THEN
+    ALTER TABLE public.chambres ADD COLUMN quartier character varying;
+  END IF;
+END $$;
+
+-- Création de la séquence pour terrains
+CREATE SEQUENCE IF NOT EXISTS terrains_id_seq;
+
+-- Suppression de l'ancienne table terrains si elle existe
+DROP TABLE IF EXISTS public.terrains CASCADE;
+
+-- Création de la table terrains avec le bon schéma
+CREATE TABLE public.terrains (
+  id integer NOT NULL DEFAULT nextval('terrains_id_seq'::regclass),
+  id_proprietaire integer,
+  titre character varying,
+  description text,
+  adresse text,
+  quartier character varying,
+  ville character varying,
+  superficie_m2 numeric,
+  prix numeric, -- Champ prix unique
+  type_terrain character varying DEFAULT 'residentiel'::character varying,
+  statut_vente character varying DEFAULT 'disponible'::character varying CHECK (statut_vente::text = ANY (ARRAY['disponible'::character varying, 'vendu'::character varying, 'reserve'::character varying]::text[])),
+  photos text,
+  date_publication timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+  vendu boolean DEFAULT false,
+  id_proprietaire_uuid uuid,
+  CONSTRAINT terrains_pkey PRIMARY KEY (id),
+  CONSTRAINT terrains_id_proprietaire_fkey FOREIGN KEY (id_proprietaire) REFERENCES public.utilisateurs(id)
+); 

@@ -25,6 +25,7 @@ interface SearchFilters {
   garage: boolean
   chap_chap: boolean
   superficie_min: string
+  type_bien: string // maison ou terrain
 }
 
 interface SearchFormProps {
@@ -42,7 +43,8 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, loading = false }) =>
     nb_chambres: '',
     garage: false,
     chap_chap: false,
-    superficie_min: ''
+    superficie_min: '',
+    type_bien: '',
   })
 
   const { fetchVillesDistinctes } = useProperties();
@@ -67,7 +69,8 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, loading = false }) =>
       nb_chambres: '',
       garage: false,
       chap_chap: false,
-      superficie_min: ''
+      superficie_min: '',
+      type_bien: '',
     })
   }
 
@@ -115,25 +118,46 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, loading = false }) =>
             </div>
           </div>
 
-          {/* Type de location */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Type de location
-            </Label>
-            <Select
-              value={filters.type_location}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, type_location: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionnez le type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="mois">Au mois</SelectItem>
-                <SelectItem value="jour">À la journée</SelectItem>
-                <SelectItem value="heure">À l'heure (Chap-Chap)</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Type de bien et type de location */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Home className="h-4 w-4" />
+                Type de bien
+              </Label>
+              <Select
+                value={filters.type_bien}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, type_bien: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Maison ou terrain" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tous">Tous</SelectItem>
+                  <SelectItem value="maison">Maison</SelectItem>
+                  <SelectItem value="terrain">Terrain</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Type de location
+              </Label>
+              <Select
+                value={filters.type_location}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, type_location: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionnez le type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mois">Au mois</SelectItem>
+                  <SelectItem value="jour">À la journée</SelectItem>
+                  <SelectItem value="heure">À l'heure (Chap-Chap)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Prix */}

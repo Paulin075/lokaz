@@ -73,7 +73,7 @@ const Login = () => {
             onClick={() => navigate('/signup')}
             className="text-lokaz-orange hover:underline font-medium"
           >
-            Inscrivez-vous
+            Inscrivez-vous sur NBBC Immo
           </button>
         </p>
       </div>

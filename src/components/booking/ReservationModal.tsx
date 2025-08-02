@@ -97,11 +97,39 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
     }
   }
 
-  if (!chambre) return null
+  if (!chambre) {
+    return (
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent 
+          className="max-w-md"
+          aria-describedby="reservation-error-description"
+        >
+                  <DialogHeader>
+          <DialogTitle>Erreur</DialogTitle>
+        </DialogHeader>
+        
+        {/* Description pour l'accessibilité */}
+        <div id="reservation-error-description" className="sr-only">
+          Erreur : impossible d'afficher la réservation
+        </div>
+        
+        <div className="text-center text-red-600 font-semibold py-8">
+            Impossible d'afficher la réservation : la chambre sélectionnée est introuvable ou a été supprimée.
+          </div>
+          <div className="flex justify-center mt-4">
+            <Button onClick={onClose} className="bg-red-600 hover:bg-red-700 text-white">Fermer</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        aria-describedby="reservation-form-description"
+      >
         <DialogHeader>
           <DialogTitle className="font-baloo text-xl text-lokaz-black">
             Réserver la Chambre {chambre.numero_chambre}
@@ -110,7 +138,12 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
             Complétez les informations pour finaliser votre réservation
           </DialogDescription>
         </DialogHeader>
-
+        
+        {/* Description pour l'accessibilité */}
+        <div id="reservation-form-description" className="sr-only">
+          Formulaire de réservation pour la chambre {chambre.numero_chambre}
+        </div>
+        
         <div className="space-y-6">
           {/* Mode de location */}
           <div className="space-y-2">

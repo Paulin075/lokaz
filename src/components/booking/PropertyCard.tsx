@@ -21,12 +21,12 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ chambre, onReserve }) => {
     if (chambre.photos) {
       try {
         const photos = JSON.parse(chambre.photos)
-        return photos[0] || '/placeholder.svg'
+        return photos[0] || null
       } catch {
-        return '/placeholder.svg'
+        return null
       }
     }
-    return '/placeholder.svg'
+    return null
   }
 
   const formatPrice = (price: number) => {
@@ -46,11 +46,24 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ chambre, onReserve }) => {
         <CardContent className="p-0">
           {/* Image */}
           <div className="relative h-48 overflow-hidden">
-            <img
-              src={getMainImage()}
-              alt={`Chambre ${chambre.numero_chambre}`}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            />
+            {getMainImage() ? (
+              <img
+                src={getMainImage()}
+                alt={`Chambre ${chambre.numero_chambre}`}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) {
+                    parent.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gray-100"><p class="text-gray-500 text-sm">Aucune image</p></div>';
+                  }
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                <p className="text-gray-500 text-sm">Aucune image</p>
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
             
             {/* Badges sur l'image */}
@@ -138,11 +151,17 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ chambre, onReserve }) => {
               )}
               <div className="flex items-center gap-1 text-sm text-gray-600">
                 <MapPin className="h-4 w-4" />
-                {/* Afficher la ville si disponible */}
-                {chambre.ville ? (
-                  <span className="truncate font-semibold">{chambre.ville}</span>
-                ) : chambre.maisons?.ville ? (
-                  <span className="truncate font-semibold">{chambre.maisons.ville}</span>
+                {/* Afficher la ville et le quartier si disponible */}
+                {chambre.ville || chambre.maisons?.ville ? (
+                  <span className="truncate font-semibold">
+                    {chambre.ville || chambre.maisons?.ville}
+                    {(chambre.quartier || chambre.maisons?.quartier) && (
+                      <>
+                        {', '}
+                        {chambre.quartier || chambre.maisons?.quartier}
+                      </>
+                    )}
+                  </span>
                 ) : null}
               </div>
               {/* Message d'avertissement si propriétaire non vérifié */}

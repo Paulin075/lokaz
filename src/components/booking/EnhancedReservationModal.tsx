@@ -55,6 +55,7 @@ const EnhancedReservationModal: React.FC<EnhancedReservationModalProps> = ({
     photos: [],
     superficie_m2: '',
     adresse: '',
+    quartier: '',
     ville: '',
     prix_eau: '',
     prix_electricite: '',
@@ -169,6 +170,7 @@ const EnhancedReservationModal: React.FC<EnhancedReservationModalProps> = ({
         chap_chap: !!formData.chap_chap,
         photos: JSON.stringify(photoUrls),
         adresse: formData.adresse,
+        quartier: formData.quartier,
         ville: formData.ville,
         prix_heure: toNumber(formData.prix_heure),
         prix_jour: toNumber(formData.prix_jour),
@@ -265,6 +267,7 @@ const EnhancedReservationModal: React.FC<EnhancedReservationModalProps> = ({
         prix_heure: property.chap_chap ? property.prix_heure ? property.prix_heure.toString() : '' : '',
         prix_jour: property.chap_chap ? property.prix_jour ? property.prix_jour.toString() : '' : '',
         adresse: property.adresse || '',
+        quartier: property.quartier || '',
         ville: property.ville || '',
         prix_eau: property.prix_eau ? property.prix_eau.toString() : '',
         prix_electricite: property.prix_electricite ? property.prix_electricite.toString() : '',
@@ -291,6 +294,7 @@ const EnhancedReservationModal: React.FC<EnhancedReservationModalProps> = ({
         photos: [],
         superficie_m2: '',
         adresse: '',
+        quartier: '',
         ville: '',
         prix_eau: '',
         prix_electricite: '',
@@ -306,12 +310,21 @@ const EnhancedReservationModal: React.FC<EnhancedReservationModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        aria-describedby="enhanced-reservation-description"
+      >
         <DialogHeader>
           <DialogTitle className="font-baloo text-xl text-lokaz-black">
             {property && property.id ? 'Modifier la location' : 'Ajouter une location'}
           </DialogTitle>
         </DialogHeader>
+        
+        {/* Description pour l'accessibilité */}
+        <div id="enhanced-reservation-description" className="sr-only">
+          Formulaire pour {property && property.id ? 'modifier' : 'ajouter'} une location de propriété
+        </div>
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Propriété associée */}
           <div className="space-y-2">
@@ -379,6 +392,14 @@ const EnhancedReservationModal: React.FC<EnhancedReservationModalProps> = ({
                 onChange={e => setFormData(f => ({ ...f, ville: e.target.value }))}
                 readOnly={formData.id_maison !== "aucune"}
                 required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Quartier</Label>
+              <Input
+                value={formData.quartier || ''}
+                onChange={e => setFormData(f => ({ ...f, quartier: e.target.value }))}
+                placeholder="Ex: Tokoin, Bé, Agoè, etc."
               />
             </div>
             {/* Corrige l'affichage des champs prix_eau et prix_electricite pour qu'ils soient bien visibles si une propriété est sélectionnée */}
