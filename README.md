@@ -46,23 +46,6 @@
 - **Vercel** pour l'hébergement
 - **Domaine personnalisé** : nbbcimmo.com
 
-## 🚀 Installation
-
-```bash
-# Cloner le projet
-git clone https://github.com/Paulin075/lokaz.git
-cd lokaz
-
-# Installer les dépendances
-npm install
-
-# Configurer les variables d'environnement
-cp .env.example .env.local
-# Remplir les variables Supabase
-
-# Lancer en développement
-npm run dev
-```
 
 ## 📱 Utilisation
 
@@ -86,7 +69,7 @@ Le site est déployé sur **Vercel** et accessible à l'adresse :
 ## 📞 Contact
 
 - **Téléphone** : +228 96 20 04 88
-- **Email** : lokazsu228@gmail.com
+- **Email** : immonbbc@gmail.com
 - **Localisation** : Lomé, Togo
 
 ## 📄 Licence
@@ -95,4 +78,4 @@ Ce projet est développé pour **NBB Cimmo** - Tous droits réservés.
 
 ---
 
-**NBB Cimmo** - Votre partenaire immobilier de confiance au Togo 🏠✨
+**NBBC-immo** - Votre partenaire immobilier de confiance au Togo 🏠✨
