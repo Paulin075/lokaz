@@ -80,7 +80,7 @@ const HttpsAlert: React.FC = () => {
               <Smartphone className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-gray-700 text-sm leading-relaxed">
-                  Pour installer <strong>NBBC Immo</strong> comme application mobile et
+                  Pour installer <strong>Lokaz</strong> comme application mobile et
                   utiliser toutes les fonctionnalités, une connexion HTTPS est nécessaire.
                 </p>
               </div>

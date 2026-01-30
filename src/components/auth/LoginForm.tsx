@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Eye, EyeOff, LogIn, Mail, Lock } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import UserTypeToggle from '@/components/UserTypeToggle'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 
 interface LoginFormProps {
@@ -15,24 +13,14 @@ interface LoginFormProps {
   defaultUserType?: 'proprietaire' | 'locataire'
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, defaultUserType }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
   const { signIn } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  // Initialiser le type d'utilisateur à partir de l'URL, de la prop, ou par défaut
-  const initialType = (searchParams.get('type') as 'proprietaire' | 'locataire') || defaultUserType || 'proprietaire'
-  const [userType, setUserType] = useState<'proprietaire' | 'locataire'>(initialType)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-
-  // S'assurer que le type d'utilisateur n'est initialisé qu'une seule fois
-  useEffect(() => {
-    setUserType(initialType)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,45 +28,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, defaultUserType }) => 
     setError('')
 
     try {
-      // Vérifier d'abord le type d'utilisateur dans la base de données
-      const { data: userData, error: userError } = await supabase
-        .from('utilisateurs')
-        .select('type_utilisateur')
-        .eq('email', email)
-        .single()
-
-      if (userError || !userData) {
-        setError('Utilisateur non trouvé')
-        setLoading(false)
-        return
-      }
-
-      // Vérifier que le type d'utilisateur correspond à la sélection
-      if (userData.type_utilisateur !== userType) {
-        setError(`Vous n'êtes pas autorisé à vous connecter en tant que ${userType}. Votre compte est de type ${userData.type_utilisateur}.`)
-        setLoading(false)
-        return
-      }
-
-      // Si la vérification passe, procéder à la connexion
       await signIn(email, password)
       onSuccess()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erreur de connexion:', err)
-      
+
       // Gérer les erreurs spécifiques
-      if (err.message) {
-        if (err.message.includes('Email not confirmed')) {
-          setError('Votre email n\'est pas encore confirmé. Veuillez vérifier votre boîte mail et cliquer sur le lien de confirmation.')
-        } else if (err.message.includes('Invalid login credentials')) {
-          setError('Email ou mot de passe incorrect')
-        } else if (err.message.includes('Too many requests')) {
-          setError('Trop de tentatives de connexion. Veuillez attendre quelques minutes avant de réessayer.')
-        } else {
-          setError(err.message)
-        }
+      const errorMessage = (err as any).message || 'Une erreur est survenue lors de la connexion';
+
+      if (errorMessage.includes('Email not confirmed')) {
+        setError('Votre email n\'est pas encore confirmé. Veuillez vérifier votre boîte mail et cliquer sur le lien de confirmation.')
+      } else if (errorMessage.includes('Invalid login credentials')) {
+        setError('Email ou mot de passe incorrect')
+      } else if (errorMessage.includes('Too many requests')) {
+        setError('Trop de tentatives de connexion. Veuillez attendre quelques minutes avant de réessayer.')
       } else {
-        setError('Une erreur est survenue lors de la connexion')
+        setError(errorMessage)
       }
     } finally {
       setLoading(false)
@@ -86,14 +51,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, defaultUserType }) => 
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto dark:bg-card dark:border-border">
       <CardHeader className="text-center">
-        <CardTitle className="flex items-center justify-center gap-2 text-2xl font-baloo text-lokaz-black">
+        <CardTitle className="flex items-center justify-center gap-2 text-2xl font-baloo text-lokaz-black dark:text-lokaz-orange">
           <LogIn className="h-6 w-6 text-lokaz-orange" />
           Connexion
         </CardTitle>
-        <CardDescription>
-          Connectez-vous à votre compte NBBC Immo
+        <CardDescription className="dark:text-muted-foreground">
+          Connectez-vous à votre compte Lokaz
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -105,15 +70,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, defaultUserType }) => 
           )}
 
           <div className="space-y-2">
-            <Label>Type de connexion</Label>
-            <UserTypeToggle
-              selectedType={userType}
-              onTypeChange={setUserType}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email" className="flex items-center gap-2">
+            <Label htmlFor="email" className="flex items-center gap-2 dark:text-foreground">
               <Mail className="h-4 w-4" />
               Email
             </Label>
@@ -124,11 +81,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, defaultUserType }) => 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="dark:bg-secondary dark:text-foreground"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="flex items-center gap-2">
+            <Label htmlFor="password" className="flex items-center gap-2 dark:text-foreground">
               <Lock className="h-4 w-4" />
               Mot de passe
             </Label>
@@ -140,6 +98,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, defaultUserType }) => 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="dark:bg-secondary dark:text-foreground"
               />
               <Button
                 type="button"
@@ -161,7 +120,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, defaultUserType }) => 
             {loading ? 'Connexion...' : 'Se connecter'}
           </Button>
 
-          <div className="text-center text-sm text-gray-600">
+          <div className="text-center text-sm text-gray-600 dark:text-gray-400">
             <button
               type="button"
               onClick={() => navigate('/forgot-password')}

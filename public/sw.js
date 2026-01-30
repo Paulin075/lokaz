@@ -1,9 +1,9 @@
-// Service Worker pour NBBC Immo
+// Service Worker pour Lokaz
 // Version 1.0.0
 
-const CACHE_NAME = 'nbbc-immo-v1.0.0';
-const STATIC_CACHE = 'nbbc-static-v1.0.0';
-const DYNAMIC_CACHE = 'nbbc-dynamic-v1.0.0';
+const CACHE_NAME = 'lokaz-v1.0.0';
+const STATIC_CACHE = 'lokaz-static-v1.0.0';
+const DYNAMIC_CACHE = 'lokaz-dynamic-v1.0.0';
 
 // Ressources à mettre en cache lors de l'installation
 const STATIC_ASSETS = [
@@ -81,6 +81,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Ignorer les requêtes non-GET (POST, PUT, DELETE, etc.)
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   // Stratégie Cache First pour les ressources statiques
   if (isStaticAsset(event.request)) {
     event.respondWith(cacheFirst(event.request));
@@ -107,15 +112,15 @@ self.addEventListener('fetch', (event) => {
 function isStaticAsset(request) {
   const url = new URL(request.url);
   return url.pathname.includes('/AppImages/') ||
-         url.pathname.includes('.css') ||
-         url.pathname.includes('.js') ||
-         url.pathname.includes('/manifest.json');
+    url.pathname.includes('.css') ||
+    url.pathname.includes('.js') ||
+    url.pathname.includes('/manifest.json');
 }
 
 // Vérifier si c'est une requête de page
 function isPageRequest(request) {
   return request.method === 'GET' &&
-         request.headers.get('accept').includes('text/html');
+    request.headers.get('accept').includes('text/html');
 }
 
 // Vérifier si c'est une requête d'image
@@ -203,7 +208,7 @@ self.addEventListener('push', (event) => {
     body: data.body,
     icon: '/AppImages/icon-192x192.png',
     badge: '/AppImages/badge-72x72.png',
-    tag: 'nbbc-notification',
+    tag: 'lokaz-notification',
     data: data.url,
     actions: [
       {

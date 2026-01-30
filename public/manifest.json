@@ -1,6 +1,6 @@
 {
-  "name": "NBBC Immo - Plateforme Immobilière du Togo",
-  "short_name": "NBBC Immo",
+  "name": "Lokaz - Plateforme Immobilière du Togo",
+  "short_name": "Lokaz",
   "description": "La première plateforme immobilière connectée du Togo. Location mensuelle, journalière et service Chap-Chap (à l'heure). Plus de 500 logements disponibles.",
   "start_url": "/?utm_source=pwa",
   "display": "standalone",
@@ -10,7 +10,11 @@
   "scope": "/",
   "lang": "fr",
   "dir": "ltr",
-  "categories": ["business", "lifestyle", "utilities"],
+  "categories": [
+    "business",
+    "lifestyle",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "/AppImages/favicon.png",
@@ -73,7 +77,7 @@
       "sizes": "1280x720",
       "type": "image/png",
       "platform": "wide",
-      "label": "Page d'accueil NBBC Immo sur desktop"
+      "label": "Page d'accueil Lokaz sur desktop"
     },
     {
       "src": "/AppImages/screenshot-mobile-1.png",
@@ -138,7 +142,7 @@
   },
   "protocol_handlers": [
     {
-      "protocol": "web+nbbcimmo",
+      "protocol": "web+lokaz",
       "url": "/?action=%s"
     }
   ],
@@ -153,7 +157,9 @@
       "files": [
         {
           "name": "images",
-          "accept": ["image/*"]
+          "accept": [
+            "image/*"
+          ]
         }
       ]
     }

@@ -14,17 +14,17 @@ interface SEOProps {
 }
 
 const SEO: React.FC<SEOProps> = ({
-  title = "NBBC Immo - Plateforme Immobilière #1 au Togo",
-  description = "🏠 NBBC Immo : La plateforme immobilière connectée du Togo. Location mensuelle, journalière ou à l'heure (Chap-Chap). +500 logements à Lomé. Service 24/7.",
-  keywords = "NBBC Immo, immobilier Togo, location Lomé, appartement Togo, maison location, Chap-Chap, location journalière",
-  image = "https://nbbcimmo.com/AppImages/og-image.jpg",
-  url = "https://nbbcimmo.com",
+  title = "Lokaz - Plateforme Immobilière #1 au Togo",
+  description = "🏠 Lokaz : La plateforme immobilière connectée du Togo. Location mensuelle, journalière ou à l'heure (Chap-Chap). +500 logements à Lomé. Service 24/7.",
+  keywords = "Lokaz, immobilier Togo, location Lomé, appartement Togo, maison location, Chap-Chap, location journalière",
+  image = "https://lokaz.com/AppImages/og-image.jpg",
+  url = "https://lokaz.com",
   type = "website",
   noIndex = false,
   canonical,
   structuredData
 }) => {
-  const siteTitle = "NBBC Immo";
+  const siteTitle = "Lokaz";
   const fullTitle = title.includes(siteTitle) ? title : `${title} | ${siteTitle}`;
 
   return (
@@ -60,8 +60,8 @@ const SEO: React.FC<SEOProps> = ({
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
       <meta name="twitter:image:alt" content={`${siteTitle} - ${title}`} />
-      <meta name="twitter:site" content="@NBBCImmo" />
-      <meta name="twitter:creator" content="@NBBCImmo" />
+      <meta name="twitter:site" content="@Lokaz" />
+      <meta name="twitter:creator" content="@Lokaz" />
 
       {/* Geo tags */}
       <meta name="geo.region" content="TG" />
@@ -70,7 +70,7 @@ const SEO: React.FC<SEOProps> = ({
       <meta name="ICBM" content="6.1319, 1.2228" />
 
       {/* Additional meta tags */}
-      <meta name="author" content="NBBC Immo" />
+      <meta name="author" content="Lokaz" />
       <meta name="language" content="fr" />
       <meta name="theme-color" content="#FF6B35" />
 

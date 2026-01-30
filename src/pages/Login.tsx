@@ -14,14 +14,12 @@ const Login = () => {
     // Attendre que l'authentification soit chargée avant de rediriger
     // ET seulement si on a les données utilisateur (pas juste la session auth)
     if (!loading && user && userData) {
-      console.log('Login: Utilisateur connecté avec données, redirection vers dashboard')
       navigate('/dashboard', { replace: true })
     }
   }, [user, userData, loading, navigate])
 
   const handleLoginSuccess = () => {
     // La redirection sera gérée par le useEffect ci-dessus
-    console.log('Connexion réussie, redirection en cours...')
   }
 
   // Afficher un loader pendant le chargement de l'authentification
@@ -63,7 +61,7 @@ const Login = () => {
       </div>
 
       <div className="mb-8">
-        <Logo className="h-16 w-auto" />
+        <Logo className="h-40 md:h-48 w-auto drop-shadow-lg transition-transform hover:scale-105 duration-300" />
       </div>
       <LoginForm onSuccess={handleLoginSuccess} />
       <div className="mt-6 text-center">
@@ -73,7 +71,7 @@ const Login = () => {
             onClick={() => navigate('/signup')}
             className="text-lokaz-orange hover:underline font-medium"
           >
-            Inscrivez-vous sur NBBC Immo
+            Inscrivez-vous sur Lokaz
           </button>
         </p>
       </div>

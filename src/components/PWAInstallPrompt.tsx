@@ -156,7 +156,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
         // Instructions manuelles pour l'utilisateur
         if (navigator.userAgent.includes("Chrome")) {
           alert(
-            "Pour installer l'application :\n1. Cliquez sur les 3 points en haut à droite\n2. Sélectionnez 'Installer NBBC Immo'\n3. Confirmez l'installation",
+            "Pour installer l'application :\n1. Cliquez sur les 3 points en haut à droite\n2. Sélectionnez 'Installer Lokaz'\n3. Confirmez l'installation",
           );
         } else if (navigator.userAgent.includes("Safari")) {
           alert(
@@ -222,7 +222,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
       <div className="fixed bottom-4 right-4 z-50 max-w-sm animate-fade-in">
         <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
           {/* Header avec dégradé */}
-          <div className="bg-gradient-to-r from-nbbc-orange to-nbbc-orange-light p-4 text-white relative">
+          <div className="bg-gradient-to-r from-lokaz-orange to-lokaz-orange-light p-4 text-white relative">
             <button
               onClick={handleClose}
               className="absolute top-2 right-2 text-white/80 hover:text-white transition-colors"
@@ -236,7 +236,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
                 <Smartphone className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-lg">Installer NBBC Immo</h3>
+                <h3 className="font-bold text-lg">Installer Lokaz</h3>
                 <p className="text-white/90 text-sm">
                   Application mobile gratuite
                 </p>
@@ -247,7 +247,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
           {/* Corps du message */}
           <div className="p-4">
             <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-              🚀 Accédez rapidement à NBBC Immo depuis votre écran d'accueil.
+              🚀 Accédez rapidement à Lokaz depuis votre écran d'accueil.
               Recherchez des logements même hors ligne !
             </p>
 
@@ -256,7 +256,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
               <button
                 onClick={handleInstall}
                 disabled={isInstalling}
-                className="flex-1 bg-nbbc-orange hover:bg-nbbc-orange-light disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2"
+                className="flex-1 bg-lokaz-orange hover:bg-lokaz-orange-light disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2"
               >
                 {isInstalling ? (
                   <>
@@ -292,7 +292,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
           {/* Barre de progression */}
           <div className="h-1 bg-gray-100 overflow-hidden">
             <div
-              className="h-full bg-nbbc-orange animate-[width-shrink_15s_linear]"
+              className="h-full bg-lokaz-orange animate-[width-shrink_15s_linear]"
               style={{
                 animation: "width-shrink 15s linear forwards",
                 width: "100%",
@@ -303,7 +303,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
       </div>
 
       {/* Styles pour l'animation */}
-      <style jsx>{`
+      <style>{`
         @keyframes width-shrink {
           from {
             width: 100%;

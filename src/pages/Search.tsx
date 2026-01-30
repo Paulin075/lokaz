@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SearchForm from "@/components/SearchForm";
@@ -212,26 +212,32 @@ const Search = () => {
     return b.id - a.id;
   });
   const recentChambres = sortedByDate.slice(0, 3);
-  const shuffle = (arr) =>
+  const shuffle = <T,>(arr: T[]) =>
     arr
       .map((value) => ({ value, sort: Math.random() }))
       .sort((a, b) => a.sort - b.sort)
       .map(({ value }) => value);
   const otherChambres = shuffle(sortedByDate.slice(3));
-  const chambresToDisplay = [...recentChambres, ...otherChambres];
+  // Determine display list based on sort
+  let chambresToDisplay = [];
+  if (sortBy === 'recent') {
+    chambresToDisplay = [...recentChambres, ...otherChambres];
+  } else {
+    chambresToDisplay = sortedChambres;
+  }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-background">
       <SEO
         title="Recherche de Logements - Location & Vente"
-        description="🔍 Trouvez votre logement idéal au Togo avec NBBC Immo. +500 biens disponibles : maisons, appartements, chambres. Location mensuelle, journalière ou Chap-Chap (à l'heure)."
-        keywords="recherche logement Togo, location appartement Lomé, maison à louer, chambre étudiant, terrain à vendre, NBBC Immo"
-        canonical="https://nbbcimmo.com/search"
+        description="🔍 Trouvez votre logement idéal au Togo avec Lokaz. +500 biens disponibles : maisons, appartements, chambres. Location mensuelle, journalière ou Chap-Chap (à l'heure)."
+        keywords="recherche logement Togo, location appartement Lomé, maison à louer, chambre étudiant, terrain à vendre, Lokaz"
+        canonical="https://lokaz.com/search"
       />
       <Navigation />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 dark:text-foreground">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold font-baloo text-lokaz-black mb-4">
+          <h1 className="text-3xl font-bold font-baloo text-lokaz-black dark:text-lokaz-orange mb-4">
             Rechercher un logement
           </h1>
           <SearchForm
@@ -252,142 +258,142 @@ const Search = () => {
           terrainFilters.type_bien === "maison" ||
           terrainFilters.type_bien === "tous" ||
           terrainFilters.type_bien === undefined) && (
-          <>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold font-baloo">
-                {chambres.length} logement{chambres.length !== 1 ? "s" : ""}{" "}
-                trouvé{chambres.length !== 1 ? "s" : ""}
-              </h2>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Trier par:</span>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="recent">Plus récent</SelectItem>
-                    <SelectItem value="prix_asc">Prix croissant</SelectItem>
-                    <SelectItem value="prix_desc">Prix décroissant</SelectItem>
-                    <SelectItem value="superficie_desc">
-                      Plus grande superficie
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+            <>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold font-baloo dark:text-foreground">
+                  {chambres.length} logement{chambres.length !== 1 ? "s" : ""}{" "}
+                  trouvé{chambres.length !== 1 ? "s" : ""}
+                </h2>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Trier par:</span>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recent">Plus récent</SelectItem>
+                      <SelectItem value="prix_asc">Prix croissant</SelectItem>
+                      <SelectItem value="prix_desc">Prix décroissant</SelectItem>
+                      <SelectItem value="superficie_desc">
+                        Plus grande superficie
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
 
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(12)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="bg-gray-200 h-48 rounded-t-lg"></div>
-                    <div className="bg-white p-4 rounded-b-lg border">
-                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                      <div className="h-8 bg-gray-200 rounded"></div>
+              {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(12)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="bg-gray-200 h-48 rounded-t-lg"></div>
+                      <div className="bg-white p-4 rounded-b-lg border">
+                        <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                        <div className="h-8 bg-gray-200 rounded"></div>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <PaginatedProperties
-                chambres={chambresToDisplay.map((chambre) => ({
-                  ...chambre,
-                  quartier: chambre.quartier || chambre.neighborhood,
-                }))}
-                onReserve={handleReserve}
-                itemsPerPage={9}
-              />
-            )}
-          </>
-        )}
+                  ))}
+                </div>
+              ) : (
+                <PaginatedProperties
+                  chambres={chambresToDisplay.map((chambre) => ({
+                    ...chambre,
+                    quartier: chambre.quartier,
+                  }))}
+                  onReserve={handleReserve}
+                  itemsPerPage={9}
+                />
+              )}
+            </>
+          )}
 
         {/* Terrains à vendre */}
         {/* Affichage des terrains à vendre : toujours visible si des terrains existent, sinon seulement si filtre terrain/tous */}
         {(terrainFilters.type_bien === "terrain" ||
           terrainFilters.type_bien === "tous" ||
           terrains.length > 0) && (
-          <div className="mt-12">
-            <h2 className="text-xl font-semibold font-baloo mb-4">
-              Terrains à vendre ({terrains.length})
-            </h2>
-            {loadingTerrains ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="bg-gray-200 h-48 rounded-t-lg"></div>
-                    <div className="bg-white p-4 rounded-b-lg border">
-                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                      <div className="h-8 bg-gray-200 rounded"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : terrains.length === 0 ? (
-              <div className="text-gray-500">Aucun terrain trouvé</div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {terrains.map((terrain) => (
-                  <TerrainCard
-                    key={terrain.id}
-                    terrain={terrain}
-                    onDetails={(t) => {
-                      setSelectedTerrain(t);
-                      setTerrainDetailsOpen(true);
-                    }}
-                    onBuy={(t) => {
-                      setSelectedTerrain(t);
-                      setTerrainBuyOpen(true);
-                    }}
-                  />
-                ))}
-                {/* Modal détails terrain */}
-                {selectedTerrain && terrainDetailsOpen && (
-                  <TerrainDetailsModal
-                    isOpen={terrainDetailsOpen}
-                    onClose={() => setTerrainDetailsOpen(false)}
-                    terrain={selectedTerrain}
-                    onBuy={() => {
-                      setTerrainDetailsOpen(false);
-                      setTerrainBuyOpen(true);
-                    }}
-                  />
-                )}
-                {/* Modal acheter maintenant terrain */}
-                {selectedTerrain && terrainBuyOpen && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
-                      <h2 className="text-xl font-bold mb-4">
-                        Acheter ce terrain
-                      </h2>
-                      <p className="mb-4 text-gray-600">
-                        Contactez le propriétaire pour finaliser l'achat de ce
-                        terrain.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-2 justify-end">
-                        <button
-                          className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-                          onClick={() => setTerrainBuyOpen(false)}
-                        >
-                          Annuler
-                        </button>
-                        <a
-                          href={`https://wa.me/22890123456?text=Bonjour, je suis intéressé(e) par l'achat du terrain "${selectedTerrain.titre}" situé à ${selectedTerrain.ville}${selectedTerrain.quartier ? `, ${selectedTerrain.quartier}` : ""}. Superficie: ${selectedTerrain.superficie_m2}m², Prix: ${selectedTerrain.prix?.toLocaleString()} FCFA. Pouvez-vous me donner plus d'informations ?`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-4 py-2 rounded bg-green-500 text-white font-semibold hover:bg-green-600 text-center"
-                        >
-                          Contacter via WhatsApp
-                        </a>
+            <div className="mt-12">
+              <h2 className="text-xl font-semibold font-baloo mb-4 dark:text-foreground">
+                Terrains à vendre ({terrains.length})
+              </h2>
+              {loadingTerrains ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="bg-gray-200 h-48 rounded-t-lg"></div>
+                      <div className="bg-white p-4 rounded-b-lg border">
+                        <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                        <div className="h-8 bg-gray-200 rounded"></div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+                  ))}
+                </div>
+              ) : terrains.length === 0 ? (
+                <div className="text-gray-500">Aucun terrain trouvé</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {terrains.map((terrain) => (
+                    <TerrainCard
+                      key={terrain.id}
+                      terrain={terrain}
+                      onDetails={(t) => {
+                        setSelectedTerrain(t);
+                        setTerrainDetailsOpen(true);
+                      }}
+                      onBuy={(t) => {
+                        setSelectedTerrain(t);
+                        setTerrainBuyOpen(true);
+                      }}
+                    />
+                  ))}
+                  {/* Modal détails terrain */}
+                  {selectedTerrain && terrainDetailsOpen && (
+                    <TerrainDetailsModal
+                      isOpen={terrainDetailsOpen}
+                      onClose={() => setTerrainDetailsOpen(false)}
+                      terrain={selectedTerrain}
+                      onBuy={() => {
+                        setTerrainDetailsOpen(false);
+                        setTerrainBuyOpen(true);
+                      }}
+                    />
+                  )}
+                  {/* Modal acheter maintenant terrain */}
+                  {selectedTerrain && terrainBuyOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                      <div className="bg-white dark:bg-card rounded-lg shadow-lg p-6 max-w-md w-full mx-4 dark:border dark:border-border">
+                        <h2 className="text-xl font-bold mb-4 dark:text-foreground">
+                          Acheter ce terrain
+                        </h2>
+                        <p className="mb-4 text-gray-600 dark:text-muted-foreground">
+                          Contactez le propriétaire pour finaliser l'achat de ce
+                          terrain.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                          <button
+                            className="px-4 py-2 rounded bg-gray-200 dark:bg-secondary dark:text-secondary-foreground hover:bg-gray-300 dark:hover:bg-secondary/80"
+                            onClick={() => setTerrainBuyOpen(false)}
+                          >
+                            Annuler
+                          </button>
+                          <a
+                            href={`https://wa.me/22890123456?text=Bonjour, je suis intéressé(e) par l'achat du terrain "${selectedTerrain.titre}" situé à ${selectedTerrain.ville}${selectedTerrain.quartier ? `, ${selectedTerrain.quartier}` : ""}. Superficie: ${selectedTerrain.superficie_m2}m², Prix: ${selectedTerrain.prix?.toLocaleString()} FCFA. Pouvez-vous me donner plus d'informations ?`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-2 rounded bg-green-500 text-white font-semibold hover:bg-green-600 text-center"
+                          >
+                            Contacter via WhatsApp
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
       </div>
       <ReservationModal
         open={reservationModalOpen}

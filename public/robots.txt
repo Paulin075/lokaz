@@ -1,5 +1,5 @@
-# Robots.txt pour NBBC Immo
-# https://nbbcimmo.com/robots.txt
+# Robots.txt pour Lokaz
+# https://lokaz.com/robots.txt
 
 User-agent: *
 Allow: /
@@ -35,7 +35,7 @@ Allow: /*.jpeg
 Allow: /*.webp
 
 # Sitemap
-Sitemap: https://nbbcimmo.com/sitemap.xml
+Sitemap: https://lokaz.com/sitemap.xml
 
 # Délai d'exploration (en secondes)
 Crawl-delay: 1

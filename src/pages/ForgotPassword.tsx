@@ -20,7 +20,7 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Protection contre les clics multiples rapides
     const now = Date.now()
     const timeSinceLastRequest = now - lastRequestTime
@@ -28,7 +28,7 @@ const ForgotPassword = () => {
       setError('Veuillez attendre au moins 5 secondes entre chaque demande de réinitialisation.')
       return
     }
-    
+
     setLoading(true)
     setError('')
     setLastRequestTime(now)
@@ -75,7 +75,7 @@ const ForgotPassword = () => {
         </div>
 
         <div className="mb-8">
-          <Logo className="h-16 w-auto" />
+          <Logo className="h-20 md:h-24 w-auto drop-shadow-lg" />
         </div>
 
         <Card className="w-full max-w-md mx-auto">
@@ -117,7 +117,7 @@ const ForgotPassword = () => {
       </div>
 
       <div className="mb-8">
-        <Logo className="h-16 w-auto" />
+        <Logo className="h-20 md:h-24 w-auto drop-shadow-lg" />
       </div>
 
       <Card className="w-full max-w-md mx-auto">
@@ -160,7 +160,7 @@ const ForgotPassword = () => {
             >
               {loading ? 'Envoi en cours...' : 'Envoyer le lien de réinitialisation'}
             </Button>
-            
+
             <div className="text-center text-xs text-gray-500 mt-4">
               <p>💡 <strong>Conseils :</strong></p>
               <p>• Vérifiez votre dossier spam si vous ne recevez pas l'email</p>

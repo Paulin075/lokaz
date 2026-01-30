@@ -65,7 +65,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ chambre, onReserve }) => {
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-            
+
             {/* Badges sur l'image */}
             <div className="absolute top-3 left-3 flex flex-wrap gap-2">
               {chambre.chap_chap && (
@@ -107,7 +107,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ chambre, onReserve }) => {
           <div className="p-4 space-y-3">
             {/* Titre et adresse */}
             <div>
-              <h3 className="font-bold text-lg text-lokaz-black flex items-center gap-2">
+              <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                 {/* Titre avec numéro de chambre */}
                 {(() => {
                   let titre = '';
@@ -149,11 +149,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ chambre, onReserve }) => {
                   })()}
                 </div>
               )}
-              <div className="flex items-center gap-1 text-sm text-gray-600">
+              <div className="flex items-center gap-1 text-sm font-bold text-gray-900 dark:text-white">
                 <MapPin className="h-4 w-4" />
                 {/* Afficher la ville et le quartier si disponible */}
                 {chambre.ville || chambre.maisons?.ville ? (
-                  <span className="truncate font-semibold">
+                  <span className="truncate">
                     {chambre.ville || chambre.maisons?.ville}
                     {(chambre.quartier || chambre.maisons?.quartier) && (
                       <>
@@ -189,7 +189,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ chambre, onReserve }) => {
             </div>
 
             {/* Caractéristiques */}
-            <div className="flex items-center gap-4 text-sm text-gray-600">
+            <div className="flex items-center gap-4 text-sm font-bold text-gray-900 dark:text-white">
               <div className="flex items-center gap-1">
                 <Ruler className="h-4 w-4" />
                 <span>{chambre.superficie_m2} m²</span>
@@ -206,7 +206,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ chambre, onReserve }) => {
 
             {/* Description */}
             {chambre.description && (
-              <p className="text-sm text-gray-600 line-clamp-2">
+              <p className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2">
                 {chambre.description}
               </p>
             )}
@@ -239,16 +239,16 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ chambre, onReserve }) => {
 
             {/* Actions */}
             <div className="flex gap-2 pt-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="flex-1"
                 onClick={() => setDetailsModalOpen(true)}
               >
                 <Eye className="h-4 w-4 mr-1" />
                 Détails
               </Button>
-              <Button 
+              <Button
                 onClick={() => onReserve(chambre.id)}
                 className="flex-1 bg-lokaz-orange hover:bg-lokaz-orange-light text-white"
                 size="sm"

@@ -127,21 +127,27 @@ const ChapChap = () => {
     return b.id - a.id;
   });
   const recentChambres = sortedByDate.slice(0, 3);
-  const shuffle = (arr) =>
+  const shuffle = <T,>(arr: T[]) =>
     arr
       .map((value) => ({ value, sort: Math.random() }))
       .sort((a, b) => a.sort - b.sort)
       .map(({ value }) => value);
   const otherChambres = shuffle(sortedByDate.slice(3));
-  const chambresToDisplay = [...recentChambres, ...otherChambres];
+  // Determine display list based on sort
+  let chambresToDisplay = [];
+  if (sortBy === 'recent') {
+    chambresToDisplay = [...recentChambres, ...otherChambres];
+  } else {
+    chambresToDisplay = sortedChambres;
+  }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-background">
       <SEO
         title="Chap-Chap - Location à l'Heure & Journalière"
-        description="⚡ Service Chap-Chap NBBC Immo : Location d'espaces à l'heure ou à la journée au Togo. Bureaux, salles de réunion, logements courts séjours. Réservation instantanée 24/7."
-        keywords="Chap-Chap, location heure Togo, bureau à l'heure Lomé, salle réunion, location journalière, court séjour, NBBC Immo"
-        canonical="https://nbbcimmo.com/chap-chap"
+        description="⚡ Service Chap-Chap Lokaz : Location d'espaces à l'heure ou à la journée au Togo. Bureaux, salles de réunion, logements courts séjours. Réservation instantanée 24/7."
+        keywords="Chap-Chap, location heure Togo, bureau à l'heure Lomé, salle réunion, location journalière, court séjour, Lokaz"
+        canonical="https://lokaz.com/chap-chap"
         structuredData={{
           "@context": "https://schema.org",
           "@type": "Service",
@@ -149,12 +155,12 @@ const ChapChap = () => {
           description: "Location d'espaces à l'heure ou à la journée",
           provider: {
             "@type": "Organization",
-            name: "NBBC Immo",
+            name: "Lokaz",
           },
           areaServed: "Togo",
           availableChannel: {
             "@type": "ServiceChannel",
-            serviceUrl: "https://nbbcimmo.com/chap-chap",
+            serviceUrl: "https://lokaz.com/chap-chap",
             availableLanguage: "French",
           },
         }}
@@ -170,14 +176,14 @@ const ChapChap = () => {
             <div className="p-3 bg-lokaz-orange rounded-full">
               <Clock className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-4xl font-bold font-baloo text-lokaz-black">
+            <h1 className="text-4xl font-bold font-baloo text-lokaz-black dark:text-lokaz-orange">
               Chap-Chap
             </h1>
             <div className="p-3 bg-lokaz-orange rounded-full">
               <Zap className="h-8 w-8 text-white" />
             </div>
           </div>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Location à l'heure ou à la journée. Réservez instantanément pour vos
             besoins urgents : bureaux, salles de réunion, logements courts
             séjours.
@@ -191,12 +197,12 @@ const ChapChap = () => {
         )}
 
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold font-baloo">
+          <h2 className="text-xl font-semibold font-baloo dark:text-foreground">
             {chambres.length} espace{chambres.length !== 1 ? "s" : ""} Chap-Chap
             disponible{chambres.length !== 1 ? "s" : ""}
           </h2>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Trier par:</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">Trier par:</span>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-48">
                 <SelectValue />

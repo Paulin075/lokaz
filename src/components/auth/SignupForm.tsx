@@ -91,7 +91,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) return
 
     setLoading(true)
@@ -116,7 +116,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
 
       if (authError) {
         console.error('Erreur Auth:', authError)
-        
+
         let errorMessage = "Une erreur est survenue lors de l'inscription"
         if (authError.message.includes('User already registered')) {
           errorMessage = "Cette adresse email est déjà utilisée"
@@ -127,7 +127,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
         } else if (authError.message.includes('Database error')) {
           errorMessage = "Erreur de base de données. Veuillez réessayer plus tard."
         }
-        
+
         toast({
           title: "Erreur d'inscription",
           description: errorMessage,
@@ -167,7 +167,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
 
         if (userError) {
           console.error('Erreur insertion utilisateur:', userError)
-          
+
           // Si c'est une erreur de doublon (email déjà existant), c'est OK
           if (userError.code === '23505' || userError.message.includes('duplicate key')) {
             toast({
@@ -177,7 +177,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
             onSuccess()
             return
           }
-          
+
           // Pour les autres erreurs, afficher un message d'erreur mais ne pas bloquer
           toast({
             title: "Inscription partiellement réussie",
@@ -215,24 +215,24 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
             variant="ghost"
             size="sm"
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-gray-600 hover:text-lokaz-orange"
+            className="flex items-center gap-2 text-gray-600 hover:text-lokaz-orange dark:text-gray-300 dark:hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Retour à l'accueil
           </Button>
         </div>
-        <CardTitle className="text-2xl font-bold text-lokaz-black">
+        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
           Créer un compte
         </CardTitle>
-        <CardDescription>
-          Rejoignez NBBC Immo dès aujourd'hui
+        <CardDescription className="dark:text-gray-300">
+          Rejoignez Lokaz dès aujourd'hui
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Type d'utilisateur */}
           <div className="space-y-2">
-            <Label>Type de compte</Label>
+            <Label className="dark:text-white">Type de compte</Label>
             <UserTypeToggle
               selectedType={formData.type_utilisateur}
               onTypeChange={handleUserTypeChange}
@@ -242,7 +242,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
           {/* Informations personnelles */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="prenom">Prénom *</Label>
+              <Label htmlFor="prenom" className="dark:text-white">Prénom *</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -252,13 +252,13 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
                   placeholder="Votre prénom"
                   value={formData.prenom}
                   onChange={handleChange}
-                  className="pl-10"
+                  className="pl-10 dark:bg-gray-800 dark:text-white dark:border-gray-700"
                   required
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="nom">Nom *</Label>
+              <Label htmlFor="nom" className="dark:text-white">Nom *</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -268,7 +268,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
                   placeholder="Votre nom"
                   value={formData.nom}
                   onChange={handleChange}
-                  className="pl-10"
+                  className="pl-10 dark:bg-gray-800 dark:text-white dark:border-gray-700"
                   required
                 />
               </div>
@@ -276,7 +276,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email" className="dark:text-white">Email *</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -286,14 +286,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
                 placeholder="votre@email.com"
                 value={formData.email}
                 onChange={handleChange}
-                className="pl-10"
+                className="pl-10 dark:bg-gray-800 dark:text-white dark:border-gray-700"
                 required
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="telephone">Téléphone *</Label>
+            <Label htmlFor="telephone" className="dark:text-white">Téléphone *</Label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -303,14 +303,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
                 placeholder="+228 XX XX XX XX"
                 value={formData.telephone}
                 onChange={handleChange}
-                className="pl-10"
+                className="pl-10 dark:bg-gray-800 dark:text-white dark:border-gray-700"
                 required
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date_naissance">Date de naissance</Label>
+            <Label htmlFor="date_naissance" className="dark:text-white">Date de naissance</Label>
             <div className="relative">
               <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -319,7 +319,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
                 type="date"
                 value={formData.date_naissance}
                 onChange={handleChange}
-                className="pl-10"
+                className="pl-10 dark:bg-gray-800 dark:text-white dark:border-gray-700"
               />
             </div>
           </div>
@@ -327,7 +327,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
           {/* Moyens de paiement */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="tmoney_number">T-Money</Label>
+              <Label htmlFor="tmoney_number" className="dark:text-white">T-Money</Label>
               <Input
                 id="tmoney_number"
                 name="tmoney_number"
@@ -335,10 +335,11 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
                 placeholder="Numéro T-Money"
                 value={formData.tmoney_number}
                 onChange={handleChange}
+                className="dark:bg-gray-800 dark:text-white dark:border-gray-700"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="flooz_number">Flooz</Label>
+              <Label htmlFor="flooz_number" className="dark:text-white">Flooz</Label>
               <Input
                 id="flooz_number"
                 name="flooz_number"
@@ -346,13 +347,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
                 placeholder="Numéro Flooz"
                 value={formData.flooz_number}
                 onChange={handleChange}
+                className="dark:bg-gray-800 dark:text-white dark:border-gray-700"
               />
             </div>
           </div>
 
           {/* Mot de passe */}
           <div className="space-y-2">
-            <Label htmlFor="mot_de_passe">Mot de passe *</Label>
+            <Label htmlFor="mot_de_passe" className="dark:text-white">Mot de passe *</Label>
             <Input
               id="mot_de_passe"
               name="mot_de_passe"
@@ -360,12 +362,13 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
               placeholder="Choisissez un mot de passe"
               value={formData.mot_de_passe}
               onChange={handleChange}
+              className="dark:bg-gray-800 dark:text-white dark:border-gray-700"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmer_mot_de_passe">Confirmer le mot de passe *</Label>
+            <Label htmlFor="confirmer_mot_de_passe" className="dark:text-white">Confirmer le mot de passe *</Label>
             <Input
               id="confirmer_mot_de_passe"
               name="confirmer_mot_de_passe"
@@ -373,12 +376,13 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess, defaultUserType }) =
               placeholder="Confirmez votre mot de passe"
               value={formData.confirmer_mot_de_passe}
               onChange={handleChange}
+              className="dark:bg-gray-800 dark:text-white dark:border-gray-700"
               required
             />
           </div>
 
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full bg-lokaz-orange hover:bg-lokaz-orange-light"
             disabled={loading}
           >

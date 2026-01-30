@@ -69,7 +69,7 @@ const Messages = () => {
     try {
       setRefreshing(true)
       console.log('🔄 Récupération des conversations pour utilisateur:', userData.id)
-      
+
       // Requête simplifiée pour éviter les erreurs 403
       const { data: sentMessages, error: sentError } = await supabase
         .from('messages')
@@ -123,19 +123,19 @@ const Messages = () => {
 
       // Grouper les messages par conversation
       const conversationMap = new Map()
-      
+
       allMessages.forEach(message => {
         const expediteur = usersMap.get(message.expediteur_id)
         const destinataire = usersMap.get(message.destinataire_id)
         const otherUser = message.expediteur_id === userData.id ? destinataire : expediteur
-        
+
         if (!otherUser) {
           console.warn('⚠️ Utilisateur non trouvé pour message:', message)
           return // Ignorer les messages avec utilisateurs invalides
         }
-        
+
         const conversationKey = otherUser.id
-        
+
         if (!conversationMap.has(conversationKey)) {
           conversationMap.set(conversationKey, {
             user: otherUser,
@@ -144,10 +144,10 @@ const Messages = () => {
             messages: []
           })
         }
-        
+
         const conversation = conversationMap.get(conversationKey)
         conversation.messages.push(message)
-        
+
         // Compter les messages non lus
         if (!message.lu && message.destinataire_id === userData.id) {
           conversation.unreadCount++
@@ -157,7 +157,7 @@ const Messages = () => {
       const conversationsArray = Array.from(conversationMap.values())
       console.log('💬 Conversations créées:', conversationsArray.length)
       setConversations(conversationsArray)
-      
+
       // Mettre à jour les messages de la conversation sélectionnée
       if (selectedConversation) {
         const updatedConversation = conversationsArray
@@ -188,12 +188,12 @@ const Messages = () => {
     console.log('Messages de la conversation sélectionnée:', conversation.messages)
     setSelectedConversation(conversation)
     setMessages(conversation.messages.slice().reverse())
-    
+
     // Marquer les messages comme lus
     const unreadMessages = conversation.messages.filter(
       m => !m.lu && (m.destinataire_id === userData.id || m.destinataire_uuid === userData.uuid)
     )
-    
+
     if (unreadMessages.length > 0) {
       try {
         const { data: updateData, error: updateError } = await supabase
@@ -272,7 +272,7 @@ const Messages = () => {
       console.log('✅ Message envoyé avec succès:', newMessageData)
 
       // Remplacer le message temporaire par le vrai message
-      setMessages(prev => prev.map(msg => 
+      setMessages(prev => prev.map(msg =>
         msg.id === tempMessage.id ? newMessageData : msg
       ))
 
@@ -310,13 +310,13 @@ const Messages = () => {
 
   if (!userData) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white dark:bg-background">
         <Navigation />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Accès non autorisé</h2>
-            <p className="text-gray-600">Vous devez être connecté pour accéder à la messagerie.</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-foreground mb-2">Accès non autorisé</h2>
+            <p className="text-gray-600 dark:text-muted-foreground">Vous devez être connecté pour accéder à la messagerie.</p>
           </div>
         </div>
       </div>
@@ -324,16 +324,16 @@ const Messages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-background">
       <Navigation />
-      
+
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold font-baloo text-lokaz-black">
+            <h1 className="text-3xl font-bold font-baloo text-lokaz-black dark:text-lokaz-orange">
               Messagerie
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-muted-foreground">
               Communiquez avec les propriétaires et locataires
             </p>
           </div>
@@ -364,13 +364,13 @@ const Messages = () => {
           <div className="col-span-3 pb-20 md:pb-0">
             {selectedConversation ? (
               <>
-                <CardHeader className="border-b">
+                <CardHeader className="border-b dark:border-border">
                   <CardTitle className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-lokaz-orange rounded-full flex items-center justify-center">
                       <User className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h3>{selectedConversation.user.prenom} {selectedConversation.user.nom}</h3>
+                      <h3 className="dark:text-foreground">{selectedConversation.user.prenom} {selectedConversation.user.nom}</h3>
                       <p className="text-sm text-gray-500 font-normal">
                         {selectedConversation.user.email}
                       </p>
@@ -383,21 +383,18 @@ const Messages = () => {
                     {messages.map((message) => (
                       <div
                         key={message.id}
-                        className={`flex ${
-                          message.expediteur_id === userData.id ? 'justify-end' : 'justify-start'
-                        }`}
+                        className={`flex ${message.expediteur_id === userData.id ? 'justify-end' : 'justify-start'
+                          }`}
                       >
                         <div
-                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                            message.expediteur_id === userData.id
+                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.expediteur_id === userData.id
                               ? 'bg-lokaz-orange text-white'
-                              : 'bg-gray-100 text-gray-900'
-                          }`}
+                              : 'bg-gray-100 text-gray-900 dark:bg-muted dark:text-foreground'
+                            }`}
                         >
                           <p className="text-sm">{message.contenu}</p>
-                          <p className={`text-xs mt-1 ${
-                            message.expediteur_id === userData.id ? 'text-white/70' : 'text-gray-500'
-                          }`}>
+                          <p className={`text-xs mt-1 ${message.expediteur_id === userData.id ? 'text-white/70' : 'text-gray-500'
+                            }`}>
                             {new Date(message.date_envoi).toLocaleString()}
                           </p>
                         </div>
@@ -440,8 +437,8 @@ const Messages = () => {
               </>
             ) : (
               <CardContent className="flex items-center justify-center h-full">
-                <div className="text-center text-gray-500">
-                  <MessageCircle className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <div className="text-center text-gray-500 dark:text-gray-400">
+                  <MessageCircle className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                   <h3 className="text-lg font-semibold mb-2">Sélectionnez une conversation</h3>
                   <p>Choisissez une conversation dans la liste pour commencer à discuter</p>
                 </div>
@@ -495,11 +492,11 @@ function ContactsSidebar({ conversations, setSelectedConversation, setMessages, 
         <div className="border-b pb-2">
           <h4 className="text-sm font-semibold px-4 pt-2 pb-1 text-gray-700">Nouveau message</h4>
           {contacts.length === 0 ? (
-            <div className="text-center py-4 text-gray-500">Aucun contact</div>
+            <div className="text-center py-4 text-gray-500 dark:text-gray-400">Aucun contact</div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y dark:divide-gray-700">
               {contacts.map((c) => (
-                <div key={c.contact_id} className="p-4 flex items-center justify-between">
+                <div key={c.contact_id} className="p-4 flex items-center justify-between dark:text-foreground">
                   <span>{c.utilisateurs.prenom} {c.utilisateurs.nom}</span>
                   <Button
                     size="sm"
@@ -526,9 +523,9 @@ function ContactsSidebar({ conversations, setSelectedConversation, setMessages, 
         <div className="pt-2">
           <h4 className="text-sm font-semibold px-4 pb-1 text-gray-700">Conversations</h4>
           {conversations.length === 0 ? (
-            <div className="text-center py-4 text-gray-500">Aucune conversation</div>
+            <div className="text-center py-4 text-gray-500 dark:text-gray-400">Aucune conversation</div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y dark:divide-gray-700">
               {conversations.map((conversation, index) => (
                 <div
                   key={index}
@@ -536,16 +533,15 @@ function ContactsSidebar({ conversations, setSelectedConversation, setMessages, 
                     setSelectedConversation(conversation)
                     setMessages(conversation.messages.slice().reverse())
                   }}
-                  className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-                    conversation.user.id === userData.id ? 'bg-lokaz-orange/10' : ''
-                  }`}
+                  className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${conversation.user.id === userData.id ? 'bg-lokaz-orange/10 dark:bg-lokaz-orange/20' : ''
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <h3 className="font-semibold">
+                      <h3 className="font-semibold dark:text-foreground">
                         {conversation.user.prenom} {conversation.user.nom}
                       </h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {conversation.user.email}
                       </p>
                     </div>

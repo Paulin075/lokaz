@@ -99,20 +99,20 @@ const TerrainDetailsModal: React.FC<TerrainDetailsModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="w-full max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden p-0"
+        className="w-full max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden p-0 dark:bg-card dark:text-foreground border-none"
         aria-describedby="terrain-details-description"
       >
         {/* Header fixe avec titre et bouton fermer */}
-        <div className="sticky top-0 z-20 px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
+        <div className="sticky top-0 z-20 px-4 py-3 bg-white dark:bg-card border-b border-gray-200 dark:border-border shadow-sm">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate pr-4">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white truncate pr-4">
               {terrain.titre}
             </h2>
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-8 w-8 p-0 hover:bg-gray-100 flex-shrink-0"
+              className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-muted flex-shrink-0"
             >
               <X className="h-5 w-5" />
             </Button>
@@ -121,14 +121,14 @@ const TerrainDetailsModal: React.FC<TerrainDetailsModalProps> = ({
 
         {/* Section Photos - séparée et espacée */}
         {getPhotos().length > 0 ? (
-          <div className="w-full bg-gray-50 py-6 px-4 border-b-4 border-gray-300 mb-2">
-            <div className="w-full h-60 sm:h-72 md:h-80 lg:h-96 rounded-lg overflow-hidden bg-white shadow-md">
+          <div className="w-full bg-gray-50 dark:bg-muted/10 py-6 px-4 border-b-4 border-gray-300 dark:border-muted mb-2">
+            <div className="w-full h-60 sm:h-72 md:h-80 lg:h-96 rounded-lg overflow-hidden bg-white dark:bg-card shadow-md">
               <ImageCarousel images={getPhotos()} />
             </div>
           </div>
         ) : (
-          <div className="w-full bg-gray-50 py-6 px-4 border-b-4 border-gray-300 mb-2">
-            <div className="w-full h-40 sm:h-48 md:h-56 rounded-lg bg-gray-100 flex items-center justify-center">
+          <div className="w-full bg-gray-50 dark:bg-muted/10 py-6 px-4 border-b-4 border-gray-300 dark:border-muted mb-2">
+            <div className="w-full h-40 sm:h-48 md:h-56 rounded-lg bg-gray-100 dark:bg-muted flex items-center justify-center">
               <p className="text-gray-400 text-sm sm:text-base">
                 Aucune image disponible
               </p>
@@ -137,7 +137,7 @@ const TerrainDetailsModal: React.FC<TerrainDetailsModalProps> = ({
         )}
 
         {/* Zone de contenu - complètement séparée des photos avec marge de sécurité */}
-        <div className="px-4 sm:px-6 py-8 bg-white mt-4 sm:mt-6 md:mt-8">
+        <div className="px-4 sm:px-6 py-8 bg-white dark:bg-card mt-4 sm:mt-6 md:mt-8">
           {/* Description pour l'accessibilité */}
           <div id="terrain-details-description" className="sr-only">
             Détails du terrain {terrain.titre} - {terrain.ville}
@@ -146,15 +146,15 @@ const TerrainDetailsModal: React.FC<TerrainDetailsModalProps> = ({
           <div className="space-y-10 sm:space-y-12 md:space-y-14">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12">
               <div className="space-y-6">
-                <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-100 shadow-sm">
-                  <h3 className="font-semibold text-lg sm:text-xl mb-4 text-gray-900">
+                <div className="bg-white dark:bg-card p-4 sm:p-6 rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm">
+                  <h3 className="font-semibold text-lg sm:text-xl mb-4 text-gray-900 dark:text-white">
                     Informations générales
                   </h3>
                   <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 text-gray-600">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 text-gray-600 dark:text-gray-400">
                       <div className="flex items-center gap-2 min-w-0">
-                        <MapPin className="h-4 w-4 flex-shrink-0 text-blue-500" />
-                        <span className="font-semibold text-gray-800 break-words">
+                        <MapPin className="h-4 w-4 flex-shrink-0 text-lokaz-orange" />
+                        <span className="font-semibold text-gray-800 dark:text-gray-200 break-words">
                           {terrain.ville}
                           {terrain.quartier && (
                             <>
@@ -178,7 +178,7 @@ const TerrainDetailsModal: React.FC<TerrainDetailsModalProps> = ({
                         </a>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600">
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                       <Users className="h-4 w-4 text-green-500" />
                       <span className="font-medium">
                         {terrain.superficie_m2} m²
@@ -187,31 +187,31 @@ const TerrainDetailsModal: React.FC<TerrainDetailsModalProps> = ({
                   </div>
                 </div>
 
-                <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-100 shadow-sm">
-                  <h3 className="font-semibold text-lg sm:text-xl mb-4 text-gray-900">
+                <div className="bg-white dark:bg-card p-4 sm:p-6 rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm">
+                  <h3 className="font-semibold text-lg sm:text-xl mb-4 text-gray-900 dark:text-white">
                     Caractéristiques
                   </h3>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
-                      <span className="font-semibold text-gray-700 min-w-0">
+                      <span className="font-semibold text-gray-700 dark:text-gray-300 min-w-0">
                         Type :
                       </span>
                       <Badge
                         variant="secondary"
-                        className="bg-blue-50 text-blue-700 border-blue-200"
+                        className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
                       >
                         {terrain.type_terrain || "Résidentiel"}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="font-semibold text-gray-700 min-w-0">
+                      <span className="font-semibold text-gray-700 dark:text-gray-300 min-w-0">
                         Statut :
                       </span>
                       <Badge
                         className={
                           terrain.statut_vente === "disponible"
-                            ? "bg-green-100 text-green-800 border-green-200"
-                            : "bg-red-100 text-red-800 border-red-200"
+                            ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800"
+                            : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800"
                         }
                       >
                         {terrain.statut_vente === "disponible"
@@ -223,11 +223,11 @@ const TerrainDetailsModal: React.FC<TerrainDetailsModalProps> = ({
                 </div>
 
                 {terrain.description && (
-                  <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-100 shadow-sm">
-                    <h3 className="font-semibold text-lg sm:text-xl mb-4 text-gray-900">
+                  <div className="bg-white dark:bg-card p-4 sm:p-6 rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <h3 className="font-semibold text-lg sm:text-xl mb-4 text-gray-900 dark:text-white">
                       Description
                     </h3>
-                    <p className="text-gray-600 leading-relaxed">
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                       {terrain.description}
                     </p>
                   </div>
@@ -235,15 +235,15 @@ const TerrainDetailsModal: React.FC<TerrainDetailsModalProps> = ({
               </div>
 
               <div className="space-y-6">
-                <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 sm:p-6 rounded-lg border border-green-200 shadow-sm">
-                  <h3 className="font-semibold text-lg sm:text-xl mb-4 text-gray-900">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/10 p-4 sm:p-6 rounded-lg border border-green-200 dark:border-green-800 shadow-sm">
+                  <h3 className="font-semibold text-lg sm:text-xl mb-4 text-gray-900 dark:text-white">
                     Prix
                   </h3>
                   <div className="space-y-3">
-                    <div className="text-2xl sm:text-3xl font-bold text-green-600">
+                    <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
                       {formatPrice(terrain.prix)} FCFA
                     </div>
-                    <div className="text-sm sm:text-base text-gray-600">
+                    <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                       <span className="font-medium">
                         {terrain.superficie_m2} m²
                       </span>
@@ -259,16 +259,16 @@ const TerrainDetailsModal: React.FC<TerrainDetailsModalProps> = ({
                 </div>
 
                 {proprietaireInfo && (
-                  <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
-                    <div className="font-bold text-orange-600 flex items-center gap-2 mb-4 text-lg">
+                  <div className="bg-white dark:bg-card p-4 sm:p-6 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <div className="font-bold text-lokaz-orange flex items-center gap-2 mb-4 text-lg">
                       <User className="h-5 w-5" />
                       Propriétaire
                     </div>
                     <div className="space-y-3">
-                      <div className="text-lg font-semibold text-gray-800">
+                      <div className="text-lg font-semibold text-gray-800 dark:text-white">
                         {proprietaireInfo.prenom} {proprietaireInfo.nom}
                       </div>
-                      <div className="text-gray-600 flex items-center gap-2">
+                      <div className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
                         <Phone className="h-4 w-4 text-blue-500" />
                         <span className="font-medium break-all">
                           {proprietaireInfo.telephone}

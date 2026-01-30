@@ -5,6 +5,7 @@ import { Menu, X, Search, MessageCircle, User, LogOut, LayoutDashboard, Home, In
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
 import Logo from './Logo';
+import { ModeToggle } from '@/components/mode-toggle';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,11 +26,10 @@ const Navigation = () => {
   const handleDashboardClick = () => {
     // Vérifier que l'utilisateur a des données avant de rediriger
     if (!userData) {
-      console.log('Navigation: Pas de données utilisateur, redirection vers /')
       navigate('/')
       return
     }
-    
+
     // Tous les types d'utilisateurs vont au dashboard
     navigate('/dashboard')
   };
@@ -37,11 +37,11 @@ const Navigation = () => {
   // Afficher un loader pendant le chargement de l'authentification
   if (loading) {
     return (
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 font-baloo">
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 font-baloo dark:bg-background dark:border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Logo className="h-10 w-auto" />
+              <Logo className="h-28 md:h-40 w-auto" />
             </div>
             <div className="animate-pulse bg-gray-200 h-4 w-24 rounded"></div>
           </div>
@@ -51,13 +51,13 @@ const Navigation = () => {
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 font-baloo">
+    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100 font-baloo dark:bg-background dark:border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/">
-              <Logo className="h-10 w-auto" />
+              <Logo className="h-28 md:h-40 w-auto transition-all duration-300" />
             </Link>
           </div>
 
@@ -65,20 +65,20 @@ const Navigation = () => {
           <div className="hidden md:flex items-center space-x-8">
             <a
               href={user ? "/dashboard" : "/home"}
-              className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors duration-200 ${currentPath === '/home' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}
+              className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors duration-200 ${currentPath === '/home' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange dark:text-gray-200 dark:hover:text-lokaz-orange'}`}
             >
               <Home className="h-4 w-4" />
               Accueil
             </a>
-            <Link to="/search" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors duration-200 ${currentPath === '/search' || currentPath === '/' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}>
+            <Link to="/search" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors duration-200 ${currentPath === '/search' || currentPath === '/' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange dark:text-gray-200 dark:hover:text-lokaz-orange'}`}>
               <Search className="h-4 w-4" />
               Rechercher
             </Link>
-            <Link to="/chap-chap" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors duration-200 ${currentPath === '/chap-chap' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}>
+            <Link to="/chap-chap" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors duration-200 ${currentPath === '/chap-chap' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange dark:text-gray-200 dark:hover:text-lokaz-orange'}`}>
               <Zap className="h-4 w-4" />
               Chap-Chap
             </Link>
-            <Link to="/about" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors duration-200 ${currentPath === '/about' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}>
+            <Link to="/about" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors duration-200 ${currentPath === '/about' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange dark:text-gray-200 dark:hover:text-lokaz-orange'}`}>
               <Info className="h-4 w-4" />
               À propos
             </Link>
@@ -86,17 +86,18 @@ const Navigation = () => {
 
           {/* Actions Desktop */}
           <div className="hidden md:flex items-center space-x-4">
+            <ModeToggle />
             {user ? (
               <>
                 <Link to="/messages">
-                  <Button variant="ghost" size="sm" className="text-gray-700 hover:text-lokaz-orange flex items-center gap-2">
+                  <Button variant="ghost" size="sm" className="text-gray-700 hover:text-lokaz-orange flex items-center gap-2 dark:text-gray-200">
                     <MessageCircle className="h-4 w-4" />
                     Messages
                   </Button>
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-gray-700 hover:text-lokaz-orange">
+                    <Button variant="ghost" size="sm" className="text-gray-700 hover:text-lokaz-orange dark:text-gray-200">
                       <User className="h-4 w-4 mr-2" />
                       {userData?.prenom || 'Mon compte'}
                     </Button>
@@ -130,8 +131,8 @@ const Navigation = () => {
             ) : (
               <>
                 <Link to="/login">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     className="border-lokaz-orange text-lokaz-orange hover:bg-lokaz-orange hover:text-white transition-all duration-200"
                   >
@@ -139,7 +140,7 @@ const Navigation = () => {
                   </Button>
                 </Link>
                 <Link to="/signup">
-                  <Button 
+                  <Button
                     className="bg-lokaz-orange hover:bg-lokaz-orange-light text-white font-medium transition-all duration-200 shadow-md hover:shadow-lg"
                   >
                     Inscription Propriétaire
@@ -150,12 +151,13 @@ const Navigation = () => {
           </div>
 
           {/* Menu Mobile */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <ModeToggle />
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700"
+              className="text-gray-700 dark:text-gray-200"
             >
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
@@ -164,28 +166,28 @@ const Navigation = () => {
 
         {/* Menu Mobile Dropdown */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-100 py-4 animate-fade-in">
+          <div className="md:hidden border-t border-gray-100 py-4 animate-fade-in dark:border-gray-800">
             <div className="flex flex-col space-y-4">
               <a
                 href={user ? "/dashboard" : "/home"}
-                className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors ${currentPath === '/home' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}
+                className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors ${currentPath === '/home' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange dark:text-gray-200'}`}
               >
                 <Home className="h-4 w-4" />
                 Accueil
               </a>
-              <Link to="/search" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors ${currentPath === '/search' || currentPath === '/' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}>
+              <Link to="/search" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors ${currentPath === '/search' || currentPath === '/' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange dark:text-gray-200'}`}>
                 <Search className="h-4 w-4" />
                 Rechercher
               </Link>
-              <Link to="/chap-chap" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors ${currentPath === '/chap-chap' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}>
+              <Link to="/chap-chap" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors ${currentPath === '/chap-chap' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange dark:text-gray-200'}`}>
                 <Zap className="h-4 w-4" />
                 Chap-Chap
               </Link>
-              <Link to="/about" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors ${currentPath === '/about' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange'}`}>
+              <Link to="/about" className={`font-medium flex items-center gap-2 px-3 py-1 rounded transition-colors ${currentPath === '/about' ? 'bg-lokaz-orange text-white shadow' : 'text-gray-700 hover:text-lokaz-orange dark:text-gray-200'}`}>
                 <Info className="h-4 w-4" />
                 À propos
               </Link>
-              <div className="pt-4 border-t border-gray-100 flex flex-col space-y-2">
+              <div className="pt-4 border-t border-gray-100 flex flex-col space-y-2 dark:border-gray-800">
                 {user ? (
                   <>
                     <span className="text-lokaz-orange font-medium">
@@ -209,8 +211,8 @@ const Navigation = () => {
                 ) : (
                   <>
                     <Link to="/login">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="w-full border-lokaz-orange text-lokaz-orange hover:bg-lokaz-orange hover:text-white"
                       >
                         Connexion

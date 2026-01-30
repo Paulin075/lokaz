@@ -41,27 +41,27 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white text-foreground dark:bg-background">
       <SEO
-        title="À Propos de NBBC Immo - Notre Mission & Vision"
-        description="🏠 Découvrez NBBC Immo, la plateforme immobilière innovante du Togo. Notre mission : connecter propriétaires et locataires pour un marché immobilier transparent et accessible."
-        keywords="à propos NBBC Immo, mission immobilier Togo, équipe NBBC, valeurs plateforme immobilière, innovation logement Lomé"
-        canonical="https://nbbcimmo.com/about"
+        title="À Propos de Lokaz - Notre Mission & Vision"
+        description="🏠 Découvrez Lokaz, la plateforme immobilière innovante du Togo. Notre mission : connecter propriétaires et locataires pour un marché immobilier transparent et accessible."
+        keywords="à propos Lokaz, mission immobilier Togo, équipe Lokaz, valeurs plateforme immobilière, innovation logement Lomé"
+        canonical="https://lokaz.com/about"
         structuredData={{
           "@context": "https://schema.org",
           "@type": "AboutPage",
-          name: "À Propos de NBBC Immo",
+          name: "À Propos de Lokaz",
           description:
-            "Page à propos de NBBC Immo, plateforme immobilière du Togo",
+            "Page à propos de Lokaz, plateforme immobilière du Togo",
           mainEntity: {
             "@type": "Organization",
-            "@id": "https://nbbcimmo.com/#organization",
-            name: "NBBC Immo",
+            "@id": "https://lokaz.com/#organization",
+            name: "Lokaz",
             foundingDate: "2024",
             founders: [
               {
                 "@type": "Person",
-                name: "Équipe NBBC",
+                name: "Équipe Lokaz",
               },
             ],
             knowsAbout: [
@@ -78,11 +78,11 @@ const About = () => {
       <div className="container mx-auto px-4 py-12">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold font-baloo text-lokaz-black mb-6">
-            À propos de <span className="text-lokaz-orange">NBBC Immo</span>
+          <h1 className="text-4xl md:text-5xl font-bold font-baloo text-lokaz-black mb-6 dark:text-white">
+            À propos de <span className="text-lokaz-orange">Lokaz</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            NBBC Immo révolutionne la location immobilière au Togo en connectant
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto dark:text-gray-300">
+            Lokaz révolutionne la location immobilière au Togo en connectant
             propriétaires et locataires sur une plateforme moderne, sécurisée et
             adaptée aux besoins locaux.
           </p>
@@ -91,15 +91,15 @@ const About = () => {
         {/* Mission Section */}
         <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
           <div>
-            <h2 className="text-3xl font-bold font-baloo text-lokaz-black mb-6">
+            <h2 className="text-3xl font-bold font-baloo text-lokaz-black mb-6 dark:text-white">
               Notre Mission
             </h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 mb-4 dark:text-gray-300">
               Faciliter l'accès au logement pour tous les Togolais en proposant
               une plateforme intuitive qui simplifie la recherche, la
               réservation et la gestion locative.
             </p>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 mb-4 dark:text-gray-300">
               Nous croyons que chacun mérite un logement de qualité, et nous
               travaillons chaque jour pour rendre cette vision réalité à travers
               la technologie et l'innovation.
@@ -127,14 +127,14 @@ const About = () => {
 
         {/* Features Section */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold font-baloo text-lokaz-black text-center mb-12">
-            Pourquoi choisir nbbc solution ?
+          <h2 className="text-3xl font-bold font-baloo text-lokaz-black text-center mb-12 dark:text-white">
+            Pourquoi choisir lokaz solution ?
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="text-center p-6 hover:shadow-lg transition-shadow"
+                className="text-center p-6 hover:shadow-lg transition-shadow dark:bg-card"
               >
                 <CardContent className="pt-6">
                   <div className="bg-lokaz-orange/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -143,7 +143,7 @@ const About = () => {
                   <h3 className="font-semibold text-lg mb-2">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600 text-sm">{feature.description}</p>
+                  <p className="text-gray-600 text-sm dark:text-gray-400">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -166,14 +166,14 @@ const About = () => {
 
         {/* Values Section */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold font-baloo text-lokaz-black mb-8">
+          <h2 className="text-3xl font-bold font-baloo text-lokaz-black mb-8 dark:text-white">
             Nos Valeurs
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="p-6">
               <div className="text-4xl mb-4">🤝</div>
               <h3 className="font-semibold text-xl mb-2">Confiance</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 Nous privilégions la transparence et l'honnêteté dans toutes nos
                 interactions.
               </p>
@@ -181,7 +181,7 @@ const About = () => {
             <div className="p-6">
               <div className="text-4xl mb-4">🚀</div>
               <h3 className="font-semibold text-xl mb-2">Innovation</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 Nous utilisons les dernières technologies pour améliorer votre
                 expérience.
               </p>
@@ -189,7 +189,7 @@ const About = () => {
             <div className="p-6">
               <div className="text-4xl mb-4">🌍</div>
               <h3 className="font-semibold text-xl mb-2">Impact Local</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 Nous contribuons au développement économique et social du Togo.
               </p>
             </div>
@@ -197,18 +197,18 @@ const About = () => {
         </div>
 
         {/* Contact Section */}
-        <div className="bg-gray-50 rounded-2xl p-8 text-center">
-          <h2 className="text-2xl font-bold font-baloo text-lokaz-black mb-4">
+        <div className="bg-gray-50 rounded-2xl p-8 text-center dark:bg-zinc-900">
+          <h2 className="text-2xl font-bold font-baloo text-lokaz-black mb-4 dark:text-white">
             Une question ? Contactez-nous !
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 mb-6 dark:text-gray-300">
             Notre équipe est là pour vous accompagner dans votre recherche de
             logement.
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <div className="flex items-center gap-2">
               <span className="text-lokaz-orange">📧</span>
-              <span>immonbbc@gmail.com</span>
+              <span>contact@lokaz.com</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-lokaz-orange">📞</span>

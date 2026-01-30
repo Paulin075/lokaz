@@ -19,8 +19,8 @@ const CallToAction = () => {
             Vous avez un espace à louer ?
           </h2>
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto font-medium">
-            Rejoignez des centaines de propriétaires qui font confiance à NBBC
-            Immo pour maximiser leurs revenus locatifs
+            Rejoignez des centaines de propriétaires qui font confiance à Lokaz
+            pour maximiser leurs revenus locatifs
           </p>
         </div>
 

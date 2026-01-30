@@ -1,14 +1,13 @@
-
 import React from 'react';
 
-const Logo = ({ className = "h-8 w-auto" }: { className?: string }) => {
+const Logo = ({ className = "h-12 w-auto" }: { className?: string }) => {
   return (
     <div className={`flex items-center ${className}`}>
-      {/* Logo NBBC Immo - chemin mis à jour */}
-      <img 
-        src="/AppImages/favicon.png" 
-        alt="NBBC IMMO" 
-        className="h-full w-auto"
+      {/* Logo Lokaz - chemin mis à jour */}
+      <img
+        src="/AppImages/favicon.png"
+        alt="LOKAZ"
+        className="h-full w-auto dark:invert dark:brightness-200 transition-all duration-300 transform hover:scale-105"
         onError={(e) => {
           // Fallback vers le SVG si l'image ne se charge pas
           e.currentTarget.style.display = 'none';
@@ -30,7 +29,7 @@ const Logo = ({ className = "h-8 w-auto" }: { className?: string }) => {
                   fill="#f97316"
                   textAnchor="middle"
                 >
-                  NBBC IMMO
+                  LOKAZ
                 </text>
               </svg>
             `;

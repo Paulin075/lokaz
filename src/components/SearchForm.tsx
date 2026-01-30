@@ -75,8 +75,8 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, loading = false }) =>
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto shadow-lg">
-      <CardHeader className="bg-gradient-to-r from-lokaz-orange to-lokaz-orange-light text-white">
+    <Card className="w-full max-w-7xl mx-auto shadow-lg dark:bg-card">
+      <CardHeader className="bg-gradient-to-r from-lokaz-orange to-lokaz-orange-light text-white rounded-t-lg">
         <CardTitle className="flex items-center gap-2 font-baloo text-xl">
           <Search className="h-6 w-6" />
           Recherche Avancée
@@ -84,8 +84,8 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, loading = false }) =>
       </CardHeader>
       <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Localisation */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Main Filters Row 1 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="ville" className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
@@ -107,6 +107,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, loading = false }) =>
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="quartier">Quartier</Label>
               <Input
@@ -116,10 +117,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, loading = false }) =>
                 onChange={(e) => setFilters(prev => ({ ...prev, quartier: e.target.value }))}
               />
             </div>
-          </div>
 
-          {/* Type de bien et type de location */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Home className="h-4 w-4" />
@@ -139,6 +137,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, loading = false }) =>
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
@@ -160,8 +159,8 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, loading = false }) =>
             </div>
           </div>
 
-          {/* Prix */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Details Row 2 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="prix_min">Prix minimum (FCFA)</Label>
               <Input
@@ -182,10 +181,6 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, loading = false }) =>
                 onChange={(e) => setFilters(prev => ({ ...prev, prix_max: e.target.value }))}
               />
             </div>
-          </div>
-
-          {/* Caractéristiques */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Home className="h-4 w-4" />
@@ -218,48 +213,51 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, loading = false }) =>
             </div>
           </div>
 
-          {/* Options */}
-          <div className="space-y-4">
-            <Label className="text-base font-medium">Options</Label>
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="garage"
-                  checked={filters.garage}
-                  onCheckedChange={(checked) => setFilters(prev => ({ ...prev, garage: !!checked }))}
-                />
-                <Label htmlFor="garage" className="text-sm">Garage</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="chap_chap"
-                  checked={filters.chap_chap}
-                  onCheckedChange={(checked) => setFilters(prev => ({ ...prev, chap_chap: !!checked }))}
-                />
-                <Label htmlFor="chap_chap" className="text-sm">Chap-Chap disponible</Label>
+          {/* Options & Buttons Row 3 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-end">
+            {/* Options */}
+            <div className="space-y-4">
+              <Label className="text-base font-medium">Options</Label>
+              <div className="flex flex-wrap gap-6">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="garage"
+                    checked={filters.garage}
+                    onCheckedChange={(checked) => setFilters(prev => ({ ...prev, garage: !!checked }))}
+                  />
+                  <Label htmlFor="garage" className="text-sm cursor-pointer">Garage</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="chap_chap"
+                    checked={filters.chap_chap}
+                    onCheckedChange={(checked) => setFilters(prev => ({ ...prev, chap_chap: !!checked }))}
+                  />
+                  <Label htmlFor="chap_chap" className="text-sm cursor-pointer">Chap-Chap disponible</Label>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Boutons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button
-              type="submit"
-              className="flex-1 bg-lokaz-orange hover:bg-lokaz-orange-light text-white font-medium"
-              disabled={loading}
-            >
-              <Search className="h-4 w-4 mr-2" />
-              {loading ? 'Recherche...' : 'Rechercher'}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={resetFilters}
-              className="border-lokaz-orange text-lokaz-orange hover:bg-lokaz-orange hover:text-white"
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Réinitialiser
-            </Button>
+            {/* Boutons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                type="submit"
+                className="flex-1 bg-lokaz-orange hover:bg-lokaz-orange-light text-white font-medium"
+                disabled={loading}
+              >
+                <Search className="h-4 w-4 mr-2" />
+                {loading ? 'Recherche...' : 'Rechercher'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={resetFilters}
+                className="border-lokaz-orange text-lokaz-orange hover:bg-lokaz-orange hover:text-white"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Réinitialiser
+              </Button>
+            </div>
           </div>
         </form>
       </CardContent>

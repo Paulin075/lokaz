@@ -29,7 +29,7 @@ interface LocalSEOProps {
 }
 
 const LocalSEO: React.FC<LocalSEOProps> = ({
-  businessName = "NBBC Immo",
+  businessName = "Lokaz",
   description = "Plateforme immobilière connectée du Togo - Location, vente et service Chap-Chap",
   address = {
     streetAddress: "Lomé",
@@ -42,8 +42,8 @@ const LocalSEO: React.FC<LocalSEOProps> = ({
     longitude: "1.2228"
   },
   phone = "+228-96-20-04-88",
-  email = "immonbbc@gmail.com",
-  website = "https://nbbcimmo.com",
+  email = "contact@lokaz.com",
+  website = "https://lokaz.com",
   openingHours = [
     "Mo-Su 00:00-23:59"
   ],
@@ -60,9 +60,9 @@ const LocalSEO: React.FC<LocalSEOProps> = ({
     "Service Chap-Chap"
   ],
   images = [
-    "https://nbbcimmo.com/AppImages/business-photo-1.jpg",
-    "https://nbbcimmo.com/AppImages/business-photo-2.jpg",
-    "https://nbbcimmo.com/AppImages/business-photo-3.jpg"
+    "https://lokaz.com/AppImages/business-photo-1.jpg",
+    "https://lokaz.com/AppImages/business-photo-2.jpg",
+    "https://lokaz.com/AppImages/business-photo-3.jpg"
   ]
 }) => {
 
@@ -71,7 +71,7 @@ const LocalSEO: React.FC<LocalSEOProps> = ({
     "@type": "RealEstateAgent",
     "@id": `${website}/#localbusiness`,
     "name": businessName,
-    "alternateName": "NBBC",
+    "alternateName": "Lokaz",
     "description": description,
     "url": website,
     "telephone": phone,
@@ -111,10 +111,10 @@ const LocalSEO: React.FC<LocalSEOProps> = ({
     "image": images,
     "logo": `${website}/AppImages/logo.png`,
     "sameAs": [
-      "https://facebook.com/NBBCImmo",
-      "https://twitter.com/NBBCImmo",
-      "https://instagram.com/NBBCImmo",
-      "https://linkedin.com/company/nbbc-immo"
+      "https://facebook.com/Lokaz",
+      "https://twitter.com/Lokaz",
+      "https://instagram.com/Lokaz",
+      "https://linkedin.com/company/lokaz"
     ],
     "areaServed": [
       {
@@ -145,7 +145,7 @@ const LocalSEO: React.FC<LocalSEOProps> = ({
     "serviceType": services,
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
-      "name": "Services Immobiliers NBBC",
+      "name": "Services Immobiliers Lokaz",
       "itemListElement": services.map((service, index) => ({
         "@type": "Offer",
         "position": index + 1,
@@ -195,14 +195,14 @@ const LocalSEO: React.FC<LocalSEOProps> = ({
         "@type": "ContactPoint",
         "contactType": "technical support",
         "telephone": phone,
-        "email": "support@nbbcimmo.com",
+        "email": "support@lokaz.com",
         "availableLanguage": ["French"]
       },
       {
         "@type": "ContactPoint",
         "contactType": "billing support",
         "telephone": phone,
-        "email": "billing@nbbcimmo.com",
+        "email": "billing@lokaz.com",
         "availableLanguage": ["French"]
       }
     ],
@@ -221,7 +221,7 @@ const LocalSEO: React.FC<LocalSEOProps> = ({
     },
     "founder": {
       "@type": "Person",
-      "name": "Équipe NBBC"
+      "name": "Équipe Lokaz"
     },
     "foundingDate": "2024",
     "slogan": "La plateforme immobilière connectée du Togo"
@@ -252,7 +252,7 @@ const LocalSEO: React.FC<LocalSEOProps> = ({
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "Comment réserver un logement sur NBBC Immo ?",
+        "name": "Comment réserver un logement sur Lokaz ?",
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Pour réserver un logement, inscrivez-vous sur notre plateforme, recherchez le bien qui vous intéresse, puis cliquez sur 'Réserver'. Vous pourrez choisir vos dates et effectuer le paiement sécurisé."

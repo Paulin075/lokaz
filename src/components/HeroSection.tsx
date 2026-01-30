@@ -21,7 +21,7 @@ const HeroSection = () => {
           Trouvez votre logement idéal
         </h1>
         <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
-          NBBC Immo vous connecte aux meilleurs logements. Location mensuelle,
+          Lokaz vous connecte aux meilleurs logements. Location mensuelle,
           journalière ou à l'heure avec notre service Chap-Chap.
         </p>
 
